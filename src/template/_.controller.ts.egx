@@ -1,0 +1,9 @@
+rule EntityController transform entity : t_entity {
+    template: '_.controller.ts.egl'
+    target {
+      var StringUtils = Native('org.apache.commons.lang3.StringUtils');
+      var tokens = entity.a_pluralName.split(' ').collect(t | t.toLowerCase());
+      var name = StringUtils.join(tokens, "-");
+      return 'src/' + name + '/' + name + '.controller.ts'; 
+    }
+  }

@@ -1,0 +1,45 @@
+[%
+import "../common/lib/string.egl";
+import "../common/lib/entity.egl";
+import "../common/lib/attribute.egl";
+import "../common/lib/common.egl";
+%]
+
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Query,
+} from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiConsumes,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
+import { CurrentUser } from 'src/auth/curent-user.decorator';
+import { LoggedInUser } from 'src/users/entities/user.entity';
+import { [%= entity.a_pluralName.toPascalCase() %]Service } from './[%= entity.a_pluralName.toKebabCase() %].service';
+import { Filter[%= entity.a_name.toPascalCase() %]Dto } from './dto/filter-[%= entity.a_name.toKebabCase() %].dto';
+
+
+@ApiBearerAuth()
+@ApiTags('[%= entity.a_pluralName.toPascalCase() %]')
+@Controller('[%= entity.a_name.toPascalCase() %]')
+export class CustomersController {
+  constructor(private readonly [%= entity.a_pluralName.toKebabCase() %]Service: [%= entity.a_pluralName.toPascalCase() %]Service) {}
+
+  @Get()
+  findAll(
+    @Query() filter: FilterCustomerDto,
+    @CurrentUser() user: LoggedInUser
+    ) {
+    return this.[%= entity.a_pluralName.toKebabCase() %]Service.findAllWithFilter(filter, user);
+  }
+
+}

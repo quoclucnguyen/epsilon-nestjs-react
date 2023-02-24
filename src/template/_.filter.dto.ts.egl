@@ -1,0 +1,16 @@
+[%
+import "../common/lib/string.egl";
+import "../common/lib/entity.egl";
+import "../common/lib/attribute.egl";
+import "../common/lib/common.egl";
+%]
+import { ApiProperty } from "@nestjs/swagger";
+import { AbstractFilter } from "src/common/abtract.filter";
+
+export class Filter[%= entity.a_name.toPascalCase() %]Dto extends AbstractFilter {
+	[% for (attr in entity.c_attribute) { %]
+  @ApiProperty({required: false})
+  [%= attr.text.toCamelCase() %]?: [%= attr.a_type %];
+
+  [% } %]
+}

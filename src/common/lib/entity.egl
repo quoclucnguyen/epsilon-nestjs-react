@@ -1,0 +1,143 @@
+[%
+@cached
+operation t_entity displayAttribute() {
+  if (self.a_displayAttribute.isDefined()) {
+    return self.c_attribute.select(a | self.a_displayAttribute.equals(a.a_id)).first();
+  } else {
+    return null;
+  }
+}
+
+@cached
+operation t_entity displayAttributeName() {
+  if (self.a_displayAttribute.isDefined()) {
+    return self.displayAttribute().a_displayName;
+  } else {
+    return null;
+  }
+}
+
+@cached
+operation t_entity displayString() {
+  if (self.a_displayString.isDefined()) {
+    return self.a_displayString;
+  } else {
+    return self.name;
+  }
+}
+
+@cache
+operation t_entity isUser() {
+  return self.a_isUser.isDefined() and self.a_isUser.equals("true");
+}
+
+@cache
+operation allUserEntities() {
+  return t_entity.all().select(e | e.isUser());
+}
+
+@cache
+operation hasUserEntity() {
+  return t_entity.all().exists(e | e.isUser());
+}
+
+@cached
+operation t_link targetDisplayString() {
+  if (self.a_targetDisplayString.isDefined()) {
+    return self.a_targetDisplayString;
+  } else {
+    return self.a_targetName;
+  }
+}
+
+@cached
+operation t_link sourceDisplayString() {
+  if (self.a_sourceDisplayString.isDefined()) {
+    return self.a_sourceDisplayString;
+  } else {
+    return self.a_sourceName;
+  }
+}
+
+@cached
+operation t_link sourceEntity(): t_entity {
+    return t_entity.all().select(e | e.a_id.equals(self.a_source)).first();
+}
+
+@cached
+operation t_link targetEntity(): t_entity {
+    return t_entity.all().select(e | e.a_id.equals(self.a_target)).first();
+}
+
+@cached
+operation t_link isSourceNullable(): Boolean {
+    return self.a_sourceNullable.isDefined() and self.a_sourceNullable.equals("true");
+}
+
+@cached
+operation t_link isTargetNullable(): Boolean {
+    return self.a_targetNullable.isDefined() and self.a_targetNullable.equals("true");
+}
+
+@cached
+operation t_link isOneToOne(): Boolean {
+    return self.a_sourceCardinality.equals("one") and self.a_targetCardinality.equals("one");
+}
+
+@cached
+operation t_link isOneToMany(): Boolean {
+    return self.a_sourceCardinality.equals("one") and self.a_targetCardinality.equals("many");
+}
+
+@cached
+operation t_link isManyToMany(): Boolean {
+    return self.a_sourceCardinality.equals("many") and self.a_targetCardinality.equals("many");
+}
+
+@cached
+operation t_entity allUniqueAttributeTypes(): Set {
+    return self.c_attribute.collect(a | a.a_type).asSet();
+}
+
+@cached
+operation t_entity outgoingLinks(includeSelf: Boolean): Collection {
+    var links = t_link.all().select(l | l.a_source.equals(self.a_id));
+    if (includeSelf) {
+        return links;
+    } else {
+        return links.select(l | not l.a_target.equals(self.a_id));
+    }
+}
+
+@cached
+operation t_entity incomingLinks(includeSelf: Boolean): Collection {
+    var links = t_link.all().select(l | l.a_target.equals(self.a_id));
+    if (includeSelf) {
+        return links;
+    } else {
+        return links.select(l | not l.a_source.equals(self.a_id));
+    }
+}
+
+@cached
+operation t_entity allLinks(includeSelf: Boolean): Set {
+    return self.incomingLinks(includeSelf).addAll(self.outgoingLinks(includeSelf)).asSet();
+}
+
+@cached
+operation t_entity incomingEntities(includeSelf: Boolean): Collection {
+    return self.incomingLinks(includeSelf).collect(l | l.sourceEntity());
+}
+
+@cached
+operation t_entity outgoingEntities(includeSelf: Boolean): Collection {
+    return self.outgoingLinks(includeSelf).collect(l | l.targetEntity());
+}
+
+@cached
+operation t_entity linkedEntities(includeSelf: Boolean): Set {
+    var result = self.incomingEntities(includeSelf);
+    result.addAll(self.outgoingEntities(includeSelf));
+    return result.asSet();
+}
+%]

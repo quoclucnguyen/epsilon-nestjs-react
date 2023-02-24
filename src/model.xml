@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<model projectName="fms">
+	<entity id="user" name="User" pluralName="Users" isUser="true" displayAttribute="displayName" displayString="Người dùng">
+		<attribute id="displayName" displayString="Tên hiển thị" type="string">Display name</attribute>
+		<attribute id="role" displayString="Role" type="string">Role</attribute>
+		<attribute id="password" displayString="Mật khẩu" type="string">Password</attribute>
+	</entity>
+
+	<entity id="outlet" name="Outlet" pluralName="Outlets" isUser="false" displayAttribute="name" displayString="Outlets">
+		<attribute id="name" displayString="Tên" type="string">Name</attribute>
+		<attribute id="code" displayString="Code" type="string">Code</attribute>
+	</entity>
+</model>

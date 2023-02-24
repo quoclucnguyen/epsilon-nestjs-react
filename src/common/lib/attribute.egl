@@ -1,0 +1,27 @@
+[%
+@cached
+operation String graphQLType(): String {
+    switch (self) {
+        case "uuid": return "GraphQLID";
+        case "number": return "GraphQLInt";
+        case "boolean": return "GraphQLBoolean";
+        case "Date": return "GraphQLISODateTime";
+        default: return "GraphQLString";
+    }
+}
+
+@cached
+operation t_attribute isNullable(): Boolean {
+  return self.a_isNullable.isDefined() and self.a_isNullable.equals("true");
+}
+
+@cached
+operation t_attribute displayString() {
+  if (self.a_displayString.isDefined()) {
+    return self.a_displayString;
+  } else {
+    return self.text;
+  }
+}
+
+%]

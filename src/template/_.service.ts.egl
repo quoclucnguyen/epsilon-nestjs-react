@@ -1,0 +1,45 @@
+[%
+import "../common/lib/string.egl";
+import "../common/lib/entity.egl";
+%]
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Between, Like, Repository } from 'typeorm';
+import { [%= entity.a_name.toPascalCase() %]Entity } from './[%= entity.a_name.toKebabCase() %].entity';
+import { Filter[%= entity.a_name.toPascalCase() %]Dto } from './dto/filter-[%= entity.a_name.toKebabCase() %].dto';
+
+@Injectable()
+export class [%= entity.a_name.toPascalCase() %]Service extends AbstractService<[%= entity.a_name.toPascalCase() %]Entity> {
+  constructor(
+    @InjectRepository([%= entity.a_name.toPascalCase() %]Entity)
+    repository: Repository<[%= entity.a_name.toPascalCase() %]Entity>,
+  ) {
+    super([%= entity.a_name.toPascalCase() %]Service.name, repository);
+  }
+
+  async findAllWithFilter(filter: Filter[%= entity.a_name.toPascalCase() %]Dto) {
+    return this.repository
+      .findAndCount({
+        take: filter.take,
+        skip: filter.skip,
+        where: {
+            isActive: true,
+          	[% for (attr in entity.c_attribute) { %]
+            [%= attr.text.toCamelCase() %]: Like(filter?.[%= attr.text.toCamelCase() %] ? `%${filter.[%= attr.text.toCamelCase() %]}%` : '%%'),
+             [% } %]
+        },
+        order: {
+          id: 'DESC',
+        },
+        relations: {
+          createdByUser: true,
+        },
+      })
+      .then(([entities, count]) => {
+        return {
+          entities,
+          count,
+        };
+      });
+  }
+}

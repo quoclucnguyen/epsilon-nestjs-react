@@ -1,0 +1,78 @@
+[%
+import "../common/lib/string.egl";
+import "../common/lib/entity.egl";
+import "../common/lib/attribute.egl";
+import "../common/lib/common.egl";
+%]
+import {
+  Entity,
+  Column,
+  OneToOne,
+  JoinColumn,
+  OneToMany,
+  ManyToOne,
+  ManyToMany,
+  JoinTable,
+  ChildEntity,
+  BeforeInsert,
+  BeforeUpdate,
+} from 'typeorm';
+import { AbstractEntity } from '../../common/abstract.entity';
+import { ApiProperty } from "@nestjs/swagger";
+[% for (linkedEntity in entity.linkedEntities(false)) { %]
+import { [%= linkedEntity.a_name.toPascalCase() %]Entity } from '../[%= linkedEntity.a_name.toKebabCase() %]/[%= linkedEntity.a_name.toKebabCase() %].entity';
+[% } %]
+
+
+@[%= iif(entity.isUser(), 'Child', '') %]Entity({name: '[%= entity.a_name.toSnakeCase() %]'})
+export class [%= entity.a_name.toPascalCase() %]Entity extends [%= iif(entity.isUser(), 'BaseUser.BaseUserEntity', 'AbstractEntity') %] {
+  [% for (attr in entity.c_attribute) { %]
+  @Column({name: '[%= attr.text.toCamelCase() %]'[%= iif(attr.isNullable(), ', nullable: true', '') %]})
+  @ApiProperty()
+  [%= attr.text.toCamelCase() %][%= iif(attr.isNullable(),'?', '') %]: [%= attr.a_type %];
+
+  [% } %]
+  [% for (outgoingLink in entity.outgoingLinks(true)) {
+    var targetNameCamel = outgoingLink.a_targetName.toCamelCase();
+    var sourceNameCamel = outgoingLink.a_sourceName.toCamelCase();
+    var targetEntityNamePascal = outgoingLink.targetEntity().a_name.toPascalCase();
+    var targetEntityNameCamel = outgoingLink.targetEntity().a_name.toCamelCase(); %]
+    [% if (outgoingLink.isOneToOne()) { %]
+  @OneToOne(() => [%= targetEntityNamePascal %]Entity[%= iif(outgoingLink.isTargetNullable(), ', { nullable: true }', '') %])
+  @JoinColumn()
+  
+  [%= targetNameCamel %][%= iif(outgoingLink.isTargetNullable(), '?', '') %]: [%= targetEntityNamePascal %]Entity;
+
+    [% } else if (outgoingLink.isOneToMany()) { %]
+  @OneToMany(() => [%= targetEntityNamePascal %]Entity, ([%= targetEntityNameCamel %]) => [%= targetEntityNameCamel %].[%= sourceNameCamel %][%= iif(outgoingLink.isTargetNullable(), ', { nullable: true }', '') %])
+  [%= targetNameCamel %]: [%= targetEntityNamePascal %]Entity[];
+
+    [% } else { %]
+  @ManyToMany(() => [%= targetEntityNamePascal %]Entity, ([%= targetEntityNameCamel %]) => [%= targetEntityNameCamel %].[%= sourceNameCamel %][%= iif(outgoingLink.isTargetNullable(), ', { nullable: true }', '') %])
+  @JoinTable()
+  [%= targetNameCamel %]: [%= targetEntityNamePascal %]Entity[];
+
+    [% }
+  } %]
+  [% for (incomingLink in entity.incomingLinks(true)) {
+    var targetNameCamel = incomingLink.a_targetName.toCamelCase();
+    var sourceNameCamel = incomingLink.a_sourceName.toCamelCase();
+    var sourceEntityNamePascal = incomingLink.sourceEntity().a_name.toPascalCase();
+    var sourceEntityNameCamel = incomingLink.sourceEntity().a_name.toCamelCase(); %]
+    [% if (incomingLink.isOneToOne()) { %]
+  @OneToOne(() => [%= sourceEntityNamePascal %]Entity[%= iif(incomingLink.isSourceNullable(), ', { nullable: true, onDelete: \'SET NULL\'}', '') %])
+  [%= sourceNameCamel %][%= iif(incomingLink.isSourceNullable(), '?', '') %]: [%= sourceEntityNamePascal %]Entity;
+
+    [% } else if (incomingLink.isOneToMany()) { %]
+  @ManyToOne(() => [%= sourceEntityNamePascal %]Entity, ([%= sourceEntityNameCamel %]) => [%= sourceEntityNameCamel %].[%= targetNameCamel %][%= iif(incomingLink.isSourceNullable(), ', { nullable: true, onDelete: \'SET NULL\'}', '') %])
+  [%= sourceNameCamel %][%= iif(incomingLink.isSourceNullable(), '?', '') %]: [%= sourceEntityNamePascal %]Entity;
+
+    [% } else { %]
+  @ManyToMany(() => [%= sourceEntityNamePascal %]Entity, ([%= sourceEntityNameCamel %]) => [%= sourceEntityNameCamel %].[%= targetNameCamel %][%= iif(incomingLink.isSourceNullable(), ', { nullable: true }', '') %])
+  [%= sourceNameCamel %]: [%= sourceEntityNamePascal %]Entity[];
+
+    [% }
+  } %]
+
+}
+

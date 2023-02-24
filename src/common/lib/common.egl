@@ -1,0 +1,9 @@
+[%
+operation iif(result: Boolean, yes: Any, no: Any) {
+  if (result) {
+    return yes;
+  } else {
+    return no;
+  }
+}
+%]

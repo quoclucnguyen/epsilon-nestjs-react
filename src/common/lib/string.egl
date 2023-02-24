@@ -1,0 +1,29 @@
+[%
+operation String toKebabCase(): String {
+    var StringUtils = new Native('org.apache.commons.lang3.StringUtils');
+    var tokens = self.split(' ').collect(t | t.toLowerCase());
+    return StringUtils.join(tokens, "-");
+}
+
+operation String toSnakeCase(): String {
+    var StringUtils = new Native('org.apache.commons.lang3.StringUtils');
+    var tokens = self.split(' ').collect(t | t.toLowerCase());
+    return StringUtils.join(tokens, "_");
+}
+
+operation String toDotCase(): String {
+    var StringUtils = new Native('org.apache.commons.lang3.StringUtils');
+    var tokens = self.split(' ').collect(t | t.toLowerCase());
+    return StringUtils.join(tokens, ".");
+}
+
+operation String toPascalCase(): String {
+    var CaseUtils = new Native("org.apache.commons.text.CaseUtils");
+    return CaseUtils.toCamelCase(self, true, null);
+}
+
+operation String toCamelCase(): String {
+    var CaseUtils = new Native("org.apache.commons.text.CaseUtils");
+    return CaseUtils.toCamelCase(self, false, null);
+}
+%]

@@ -1,0 +1,12 @@
+{
+  "name": "epsilon_self",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "generate": "java -jar epsilon.jar -d src/template -m src/model.xml -o output -w generate"
+  },
+  "author": "",
+  "license": "ISC"
+}
