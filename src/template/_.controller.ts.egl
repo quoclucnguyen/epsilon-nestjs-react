@@ -26,6 +26,7 @@ import { CurrentUser } from 'src/auth/curent-user.decorator';
 import { LoggedInUser } from 'src/users/entities/user.entity';
 import { [%= entity.a_pluralName.toPascalCase() %]Service } from './[%= entity.a_pluralName.toKebabCase() %].service';
 import { Filter[%= entity.a_name.toPascalCase() %]Dto } from './dto/filter-[%= entity.a_name.toKebabCase() %].dto';
+import { Create[%= entity.a_name.toPascalCase() %]Dto } from './dto/create-[%= entity.a_name.toKebabCase() %].dto';
 
 
 @ApiBearerAuth()
@@ -40,6 +41,23 @@ export class CustomersController {
     @CurrentUser() user: LoggedInUser
     ) {
     return this.[%= entity.a_pluralName.toKebabCase() %]Service.findAllWithFilter(filter, user);
+  }
+
+  @Post()
+  create(
+    @Body() create[%= entity.a_pluralName.toPascalCase() %]Dto: Create[%= entity.a_name.toPascalCase() %]Dto,
+    @CurrentUser() user: LoggedInUser,
+  ) {
+    return this.[%= entity.a_pluralName.toKebabCase() %]Service.create(create[%= entity.a_name.toPascalCase() %]Dto: Create[%= entity.a_pluralName.toPascalCase() %]Dto, user);
+  }
+
+  @Patch(':id')
+  update(
+    @Param('id') id: string,
+    @Body() update[%= entity.a_name.toPascalCase() %]Dto: Update[%= entity.a_name.toPascalCase() %]Dto,
+    @CurrentUser() user: LoggedInUser,
+  ) {
+    return this.[%= entity.a_pluralName.toKebabCase() %]Service.update[%= entity.a_name.toPascalCase() %](+id, update[%= entity.a_name.toPascalCase() %]Dto, user);
   }
 
 }

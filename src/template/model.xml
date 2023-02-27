@@ -9,5 +9,6 @@
 	<entity id="outlet" name="Outlet" pluralName="Outlets" isUser="false" displayAttribute="name" displayString="Outlets">
 		<attribute id="name" displayString="Tên" type="string">Name</attribute>
 		<attribute id="code" displayString="Code" type="string">Code</attribute>
+		
 	</entity>
 </model>

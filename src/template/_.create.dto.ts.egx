@@ -1,0 +1,11 @@
+rule Entities transform entity : t_entity {
+    template: '_.create.dto.ts.egl'
+    target {
+      var StringUtils = Native('org.apache.commons.lang3.StringUtils');
+      var tokenPluralName = entity.a_pluralName.split(' ').collect(t | t.toLowerCase());
+      var tokens = entity.a_name.split(' ').collect(t | t.toLowerCase());
+      var name = StringUtils.join(tokens, "-");
+      var pluralName = StringUtils.join(tokenPluralName, "-");
+      return 'src/' + pluralName + '/dto/create-' + name + '.dto.ts'; 
+    }
+  }

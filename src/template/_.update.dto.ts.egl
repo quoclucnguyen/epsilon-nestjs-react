@@ -1,0 +1,14 @@
+[%
+import "../common/lib/string.egl";
+import "../common/lib/entity.egl";
+import "../common/lib/attribute.egl";
+import "../common/lib/common.egl";
+%]
+import { ApiProperty } from "@nestjs/swagger";
+import { IsNotEmpty } from 'class-validator';
+import { PartialType } from '@nestjs/swagger';
+import { Create[%= entity.a_name.toPascalCase() %]Dto } from './create-[%= entity.a_name.toKebabCase() %].dto';
+
+export class Update[%= entity.a_name.toPascalCase() %]Dto extends PartialType(Create[%= entity.a_name.toPascalCase() %]Dto) {
+	
+}
