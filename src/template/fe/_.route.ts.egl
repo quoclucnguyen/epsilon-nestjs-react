@@ -1,0 +1,305 @@
+[%
+import "../../common/lib/string.egl";
+import "../../common/lib/entity.egl";
+import "../../common/lib/attribute.egl";
+import "../../common/lib/common.egl";
+%]
+import {
+  CheckCircleFilled,
+  DeleteFilled,
+  EditOutlined,
+  PlusCircleOutlined,
+  SearchOutlined,
+} from "@ant-design/icons";
+import { Card } from "@nextui-org/react";
+import {
+  Button,
+  Col,
+  Form,
+  Input,
+  Modal,
+  Popconfirm,
+  Row,
+  Select,
+  Space,
+  Table,
+  Tag,
+} from "antd";
+import { useEffect, useState } from "react";
+import { useApp } from "../../App";
+import { CURD, DistrictInterface, ProvinceInterface } from "../../helper";
+
+export interface [%= entity.a_name.toPascalCase() %]Interface {
+  id: number;
+  [% for (attr in entity.c_attribute) { %]
+  [%= attr.text.toCamelCase() %][%= iif(attr.isNullable(),'?', '') %]: [%= attr.a_type %];
+  [% } %]
+}
+interface Filter {
+  take: number;
+  skip: number;
+  [% for (attr in entity.c_attribute) { %]
+  [%= attr.text.toCamelCase() %][%= iif(attr.isNullable(),'?', '') %]: [%= attr.a_type %] | null;
+  [% } %]
+}
+
+export default function [%= entity.a_name.toPascalCase() %]Page() {
+  const app = useApp();
+
+  const [filter, setFilter] = useState<Filter>({
+    [% for (attr in entity.c_attribute) { %]
+    [%= attr.text.toCamelCase() %][%= iif(attr.isNullable(),'?', '') %]: null,
+    [% } %]
+    take: 10,
+    skip: 0,
+  });
+  const [isLoadingData, setIsLoadingData] = useState<boolean>();
+  const [data, setData] = useState<[%= entity.a_name.toPascalCase() %]Interface[]>([]);
+  const [total, setTotal] = useState<number>(0);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(10);
+  const [isModalAdd[%= entity.a_name.toPascalCase() %]Open, setIsModalAdd[%= entity.a_name.toPascalCase() %]Open] =
+    useState<boolean>(false);
+  const [modalAddOrUpdate[%= entity.a_name.toPascalCase() %]Title, setModalAddOrUpdate[%= entity.a_name.toPascalCase() %]Title] =
+    useState<string>();
+  const [formAction, setFormAction] = useState<CURD | null>(null);
+  const [modalTitle, setModalTitle] = useState<string>("");
+  const [addOrUpdate[%= entity.a_name.toPascalCase() %]Form] = Form.useForm();
+
+  const handleSearch = (values: {
+  [% for (attr in entity.c_attribute) { %]
+  [%= attr.text.toCamelCase() %][%= iif(attr.isNullable(),'?', '') %]?: [%= attr.a_type %];
+  [% } %]
+  }) => {
+    const filterSearch: Filter = {
+      ...filter,
+      ...values,
+      take: pageSize,
+      skip: 0,
+    };
+    setCurrentPage(1);
+    setFilter(filterSearch);
+    getData(filterSearch);
+  };
+
+  const getData = async (filter: Filter) => {
+    setIsLoadingData(true);
+    const result = await app.axiosGet<
+      { entities: [%= entity.a_name.toPascalCase() %]Interface[]; count: number },
+      Filter
+    >("/[%= entity.a_pluralName.toKebabCase() %]", filter);
+    if (!Array.isArray(result) && result !== undefined) {
+      const { entities, count } = result;
+      setData(entities);
+      setTotal(count);
+    }
+    setIsLoadingData(false);
+  };
+
+  const handleBtnEdit[%= entity.a_name.toPascalCase() %]Click = (record: [%= entity.a_name.toPascalCase() %]Interface) => {
+    setFormAction(CURD.UPDATE);
+    setIsModalAdd[%= entity.a_name.toPascalCase() %]Open(true);
+    setModalTitle(`Cập nhật thông tin [%= entity.a_name %]: ${record.code} - ${record.name}`);
+    addOrUpdate[%= entity.a_name.toPascalCase() %]Form.setFieldsValue(record);
+  };
+  const handleBtnDeleteConfirm = (record: [%= entity.a_name.toPascalCase() %]Interface) => {
+    app.axiosDelete(`/[%= entity.a_pluralName.toKebabCase() %]/${record.id}`).then((result) => {
+      app.showAlert({
+        type: "success",
+        message: "Xóa thành công.",
+      });
+      getData(filter);
+    });
+  };
+
+  const handleAdd[%= entity.a_name.toPascalCase() %]FormSubmit = async () => {
+    await addOrUpdate[%= entity.a_name.toPascalCase() %]Form.validateFields();
+    switch (formAction) {
+      case CURD.CREATE:
+        app
+          .axiosPost(`/[%= entity.a_pluralName.toKebabCase() %]`, addOrUpdate[%= entity.a_name.toPascalCase() %]Form.getFieldsValue())
+          .then((result) => {
+            app.showAlert({
+              type: "success",
+              message: "Thêm [%= entity.a_name.toPascalCase() %] thành công",
+            });
+            addOrUpdate[%= entity.a_name.toPascalCase() %]Form.resetFields();
+            setIsModalAdd[%= entity.a_name.toPascalCase() %]Open(false);
+            setModalTitle("");
+            getData(filter);
+          });
+        break;
+      case CURD.UPDATE:
+        app
+          .axiosPatch(
+            `/[%= entity.a_pluralName.toKebabCase() %]/${addOrUpdate[%= entity.a_name.toPascalCase() %]Form.getFieldValue("id")}`,
+            addOrUpdate[%= entity.a_name.toPascalCase() %]Form.getFieldsValue()
+          )
+          .then((result) => {
+            app.showAlert({
+              type: "success",
+              message: "Cập nhập thông tin [%= entity.a_name.toPascalCase() %] thành công",
+            });
+            addOrUpdate[%= entity.a_name.toPascalCase() %]Form.resetFields();
+            setIsModalAdd[%= entity.a_name.toPascalCase() %]Open(false);
+            setModalTitle("");
+            getData(filter);
+          });
+        break;
+      default:
+    }
+  };
+
+  
+
+  useEffect(() => {
+    getData(filter);
+  }, []);
+
+  return (
+    <>
+      <Card css={{ padding: "1rem 1rem 0rem 1rem" }}>
+        <Form
+          layout={"vertical"}
+          onFinish={handleSearch}
+          initialValues={filter}
+        >
+          <Row>
+            <Space>
+              [% for (attr in entity.c_attribute) { %]
+              <Col>
+                <Form.Item label={"[%= attr.text %]"} name={"[%= attr.id.toCamelCase() %]"}>
+                  <Input allowClear />
+                </Form.Item>
+              </Col>
+              [% } %]
+              
+              <Col>
+                <Form.Item label={" "}>
+                  <Button
+                    htmlType={"submit"}
+                    icon={<SearchOutlined />}
+                    loading={isLoadingData}
+                  />
+                </Form.Item>
+              </Col>
+            </Space>
+          </Row>
+        </Form>
+      </Card>
+      <br />
+      <Card css={{ padding: "1rem" }}>
+        <Row justify={"end"}>
+          <Col>
+            <Button
+              icon={<PlusCircleOutlined />}
+              onClick={() => {
+                setIsModalAdd[%= entity.a_name.toPascalCase() %]Open(true);
+                setFormAction(CURD.CREATE);
+                setModalTitle("Thêm [%= entity.a_name %]");
+                addOrUpdate[%= entity.a_name.toPascalCase() %]Form.resetFields();
+              }}
+            >
+              Thêm
+            </Button>
+          </Col>
+        </Row>
+        <br />
+        <Table
+          bordered
+          rowKey={"id"}
+          dataSource={data}
+          loading={isLoadingData}
+          pagination={{
+            total: total,
+            pageSize: pageSize,
+            current: currentPage,
+            onChange: (page, pageSize) => {
+              setCurrentPage(page);
+              setPageSize(pageSize);
+              const value = {
+                ...filter,
+                take: pageSize,
+                skip: (page - 1) * pageSize,
+              };
+              getData(value);
+            },
+          }}
+          columns={[
+            {
+              title: "#",
+              align: "center",
+              width: "15px",
+              render: (item, record, index) => {
+                return (currentPage - 1) * pageSize + index + 1;
+              },
+            },
+            [% for (attr in entity.c_attribute) { %]
+            {
+              title: "[%= attr.a_displayString %]",
+              key: "[%= attr.id.toCamelCase() %]",
+              dataIndex: "[%= attr.id.toCamelCase() %]",
+            },
+            [% } %]
+            {
+              render: (_, record) => {
+                return (
+                  <Space>
+                    <Button
+                      icon={<EditOutlined />}
+                      onClick={() => {
+                        handleBtnEdit[%= entity.a_name.toPascalCase() %]Click(record);
+                      }}
+                    />
+                    <Popconfirm
+                      title={`Xóa [%= entity.a_name.toPascalCase() %]: ${record.code} - ${record.name}`}
+                      onConfirm={() => {
+                        handleBtnDeleteConfirm(record);
+                      }}
+                      okText="Xóa"
+                      cancelText="Hủy"
+                    >
+                      <Button icon={<DeleteFilled />} danger />
+                    </Popconfirm>
+                  </Space>
+                );
+              },
+            },
+          ]}
+        />
+      </Card>
+
+      <Modal
+        title={modalTitle}
+        open={isModalAdd[%= entity.a_name.toPascalCase() %]Open}
+        onCancel={() => {
+          setIsModalAdd[%= entity.a_name.toPascalCase() %]Open(false);
+        }}
+        footer={false}
+      >
+        <Form
+          layout={"vertical"}
+          onFinish={handleAdd[%= entity.a_name.toPascalCase() %]FormSubmit}
+          form={addOrUpdate[%= entity.a_name.toPascalCase() %]Form}
+        >
+          <Form.Item name={"id"} hidden={true}></Form.Item>
+          [% for (attr in entity.c_attribute) { %]
+          <Form.Item
+            label={"[%= attr.a_displayString %]"}
+            name={"[%= attr.id.toCamelCase() %]"}
+            rules={[{ required: true }]}
+          >
+          <Input />
+          </Form.Item>
+          [% } %]
+          <Form.Item>
+            <Button type="primary" htmlType="submit">
+              Lưu
+            </Button>
+          </Form.Item>
+        </Form>
+      </Modal>
+    </>
+  );
+}
+

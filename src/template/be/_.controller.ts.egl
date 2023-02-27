@@ -61,4 +61,11 @@ export class [%= entity.a_pluralName.toPascalCase() %]Controller {
     return this.[%= entity.a_pluralName.toKebabCase() %]Service.update[%= entity.a_name.toPascalCase() %](+id, update[%= entity.a_name.toPascalCase() %]Dto, user);
   }
 
+  @Delete(':id')
+  delete(
+    @Param('id') id: string,
+  ){
+    return this.[%= entity.a_pluralName.toKebabCase() %]Service.removeWithOpts({where:{id: +id}});
+  }
+
 }
