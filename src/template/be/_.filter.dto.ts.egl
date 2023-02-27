@@ -1,8 +1,8 @@
 [%
-import "../common/lib/string.egl";
-import "../common/lib/entity.egl";
-import "../common/lib/attribute.egl";
-import "../common/lib/common.egl";
+import "../../common/lib/string.egl";
+import "../../common/lib/entity.egl";
+import "../../common/lib/attribute.egl";
+import "../../common/lib/common.egl";
 %]
 import { ApiProperty } from "@nestjs/swagger";
 import { AbstractFilter } from "src/common/abtract.filter";

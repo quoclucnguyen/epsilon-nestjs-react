@@ -1,8 +1,8 @@
 [%
-import "../common/lib/string.egl";
-import "../common/lib/entity.egl";
-import "../common/lib/attribute.egl";
-import "../common/lib/common.egl";
+import "../../common/lib/string.egl";
+import "../../common/lib/entity.egl";
+import "../../common/lib/attribute.egl";
+import "../../common/lib/common.egl";
 %]
 
 import {
@@ -27,17 +27,18 @@ import { LoggedInUser } from 'src/users/entities/user.entity';
 import { [%= entity.a_pluralName.toPascalCase() %]Service } from './[%= entity.a_pluralName.toKebabCase() %].service';
 import { Filter[%= entity.a_name.toPascalCase() %]Dto } from './dto/filter-[%= entity.a_name.toKebabCase() %].dto';
 import { Create[%= entity.a_name.toPascalCase() %]Dto } from './dto/create-[%= entity.a_name.toKebabCase() %].dto';
+import { Update[%= entity.a_name.toPascalCase() %]Dto } from './dto/update-[%= entity.a_name.toKebabCase() %].dto';
 
 
 @ApiBearerAuth()
 @ApiTags('[%= entity.a_pluralName.toPascalCase() %]')
-@Controller('[%= entity.a_name.toPascalCase() %]')
-export class CustomersController {
+@Controller('[%= entity.a_pluralName.toKebabCase() %]')
+export class [%= entity.a_pluralName.toPascalCase() %]Controller {
   constructor(private readonly [%= entity.a_pluralName.toKebabCase() %]Service: [%= entity.a_pluralName.toPascalCase() %]Service) {}
 
   @Get()
   findAll(
-    @Query() filter: FilterCustomerDto,
+    @Query() filter: Filter[%= entity.a_name.toPascalCase() %]Dto,
     @CurrentUser() user: LoggedInUser
     ) {
     return this.[%= entity.a_pluralName.toKebabCase() %]Service.findAllWithFilter(filter, user);
@@ -45,10 +46,10 @@ export class CustomersController {
 
   @Post()
   create(
-    @Body() create[%= entity.a_pluralName.toPascalCase() %]Dto: Create[%= entity.a_name.toPascalCase() %]Dto,
+    @Body() create[%= entity.a_name.toPascalCase() %]Dto: Create[%= entity.a_name.toPascalCase() %]Dto,
     @CurrentUser() user: LoggedInUser,
   ) {
-    return this.[%= entity.a_pluralName.toKebabCase() %]Service.create(create[%= entity.a_name.toPascalCase() %]Dto: Create[%= entity.a_pluralName.toPascalCase() %]Dto, user);
+    return this.[%= entity.a_pluralName.toKebabCase() %]Service.create(create[%= entity.a_name.toPascalCase() %]Dto, user);
   }
 
   @Patch(':id')

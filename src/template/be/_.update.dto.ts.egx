@@ -6,6 +6,6 @@ rule Entities transform entity : t_entity {
       var tokens = entity.a_name.split(' ').collect(t | t.toLowerCase());
       var name = StringUtils.join(tokens, "-");
       var pluralName = StringUtils.join(tokenPluralName, "-");
-      return 'src/' + pluralName + '/dto/update-' + name + '.dto.ts'; 
+      return 'be/src/' + pluralName + '/dto/update-' + name + '.dto.ts'; 
     }
   }

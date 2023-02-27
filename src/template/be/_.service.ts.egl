@@ -1,27 +1,29 @@
 [%
-import "../common/lib/string.egl";
-import "../common/lib/entity.egl";
+import "../../common/lib/string.egl";
+import "../../common/lib/entity.egl";
+import "../../common/lib/attribute.egl";
+import "../../common/lib/common.egl";
 %]
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Between, Like, Repository } from 'typeorm';
 import { AbstractService } from 'src/common/abstract.service';
 import { LoggedInUser } from 'src/users/entities/user.entity';
-import { [%= entity.a_name.toPascalCase() %]Entity } from './[%= entity.a_name.toKebabCase() %].entity';
+import { [%= entity.a_name.toPascalCase() %]Entity } from './entities/[%= entity.a_name.toKebabCase() %].entity';
 import { Filter[%= entity.a_name.toPascalCase() %]Dto } from './dto/filter-[%= entity.a_name.toKebabCase() %].dto';
 import { Create[%= entity.a_name.toPascalCase() %]Dto } from './dto/create-[%= entity.a_name.toKebabCase() %].dto';
 import { Update[%= entity.a_name.toPascalCase() %]Dto } from './dto/update-[%= entity.a_name.toKebabCase() %].dto';
 
 @Injectable()
-export class [%= entity.a_name.toPascalCase() %]Service extends AbstractService<[%= entity.a_name.toPascalCase() %]Entity> {
+export class [%= entity.a_pluralName.toPascalCase() %]Service extends AbstractService<[%= entity.a_name.toPascalCase() %]Entity> {
   constructor(
     @InjectRepository([%= entity.a_name.toPascalCase() %]Entity)
     repository: Repository<[%= entity.a_name.toPascalCase() %]Entity>,
   ) {
-    super([%= entity.a_name.toPascalCase() %]Service.name, repository);
+    super([%= entity.a_pluralName.toPascalCase() %]Service.name, repository);
   }
 
-  async findAllWithFilter(filter: Filter[%= entity.a_name.toPascalCase() %]Dto) {
+  async findAllWithFilter(filter: Filter[%= entity.a_name.toPascalCase() %]Dto, user: LoggedInUser) {
     return this.repository
       .findAndCount({
         take: filter.take,
@@ -36,7 +38,7 @@ export class [%= entity.a_name.toPascalCase() %]Service extends AbstractService<
           id: 'DESC',
         },
         relations: {
-          createdByUser: true,
+          // createdByUser: true,
         },
       })
       .then(([entities, count]) => {
@@ -57,7 +59,7 @@ export class [%= entity.a_name.toPascalCase() %]Service extends AbstractService<
     return this.repository.save([%= entity.a_name.toCamelCase() %]);
   }
 
-  async update(id: number, input: Update[%= entity.a_name.toPascalCase() %]Dto, user: LoggedInUser) {
+  async update[%= entity.a_name.toPascalCase() %](id: number, input: Update[%= entity.a_name.toPascalCase() %]Dto, user: LoggedInUser) {
     const [%= entity.a_name.toCamelCase() %] = await this.repository.findOne({
       where: { id: id, isActive: true },
     });
@@ -67,7 +69,7 @@ export class [%= entity.a_name.toPascalCase() %]Service extends AbstractService<
     [% for (attr in entity.c_attribute) { %]
     if(input.[%= attr.text.toCamelCase() %]) [%= entity.a_name.toCamelCase() %].[%= attr.text.toCamelCase() %] = input.[%= attr.text.toCamelCase() %];
     [% } %]
-    [%= entity.a_name.toCamelCase() %].updateBy = user.id;
+    [%= entity.a_name.toCamelCase() %].updatedBy = user.id;
     return this.repository.save([%= entity.a_name.toCamelCase() %]);
   }
 }

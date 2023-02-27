@@ -1,10 +1,13 @@
 [%
-import "../common/lib/string.egl";
-import "../common/lib/entity.egl";
+import "../../common/lib/string.egl";
+import "../../common/lib/entity.egl";
+import "../../common/lib/attribute.egl";
+import "../../common/lib/common.egl";
 %]
 import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { [%= entity.a_name.toPascalCase() %]Service } from './[%= entity.a_name.toKebabCase() %].service';
+import { [%= entity.a_pluralName.toPascalCase() %]Service } from './[%= entity.a_pluralName.toKebabCase() %].service';
+import { [%= entity.a_pluralName.toPascalCase() %]Controller } from './[%= entity.a_pluralName.toKebabCase() %].controller';
 import { [%= entity.a_name.toPascalCase() %]Entity } from './entities/[%= entity.a_name.toKebabCase() %].entity';
 [% for (outgoingEntity in entity.outgoingEntities(false)) { %]
 import { [%= outgoingEntity.a_name.toPascalCase() %]Module } from '../[%= outgoingEntity.a_name.toKebabCase() %]/[%=outgoingEntity.a_name.toKebabCase() %].module';
@@ -24,11 +27,15 @@ import { [%= incomingEntity.a_name.toPascalCase() %]Module } from '../[%= incomi
     [% } %]
   ],
   providers: [
-    [%= entity.a_name.toPascalCase() %]Service,
+    [%= entity.a_pluralName.toPascalCase() %]Service,
+    [%= entity.a_pluralName.toPascalCase() %]Controller,
   ],
   exports: [
-    [%= entity.a_name.toPascalCase() %]Service,
+    [%= entity.a_pluralName.toPascalCase() %]Service,
   ],
+  controllers:[
+     [%= entity.a_pluralName.toPascalCase() %]Controller,
+  ]
 })
-export class [%= entity.a_name.toPascalCase() %]Module {
+export class [%= entity.a_pluralName.toPascalCase() %]Module {
 }
