@@ -1,0 +1,26 @@
+[%
+import "../../common/lib/string.egl";
+import "../../common/lib/entity.egl";
+import "../../common/lib/attribute.egl";
+import "../../common/lib/common.egl";
+%]
+import { ApiProperty } from "@nestjs/swagger";
+import { IsNotEmpty, IsArray, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
+
+export class Import[%= entity.a_name.toPascalCase() %]Item {
+  [% for (attr in entity.c_attribute) { %]
+	@ApiProperty()
+	[%= attr.text.toCamelCase() %][%= iif(attr.isNullable(),'?', '') %]: [%= attr.a_type %];
+
+	[% } %]
+}
+
+export class Import[%= entity.a_name.toPascalCase() %]Dto {
+	@IsArray()
+	@ValidateNested({ each: true })
+	@ApiProperty({type: [Import[%= entity.a_name.toPascalCase() %]Item]})
+  @IsNotEmpty()
+	@Type(() => Import[%= entity.a_name.toPascalCase() %]Item)
+  data: Import[%= entity.a_name.toPascalCase() %]Item[]
+}

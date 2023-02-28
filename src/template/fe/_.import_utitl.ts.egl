@@ -1,0 +1,35 @@
+[%
+import "../../common/lib/string.egl";
+import "../../common/lib/entity.egl";
+import "../../common/lib/attribute.egl";
+import "../../common/lib/common.egl";
+%]
+// App.tsx
+// import
+
+[% for (entity in t_entity.all()) { %]
+const [%= entity.a_id.toPascalCase() %]Page = React.lazy(() => import("./routes/[%= entity.a_name.toKebabCase() %]/[%= entity.a_id.toPascalCase() %]Page"));
+[% } %]
+
+// <Route>
+
+[% for (entity in t_entity.all()) { %]
+<Route
+  path={"[%= entity.a_name.toKebabCase() %]"}
+  element={
+    <RequireAuth>
+      <[%= entity.a_id.toPascalCase() %]Page />
+    </RequireAuth>
+  }
+/>
+[% } %]
+
+// mainLayout
+
+[% for (entity in t_entity.all()) { %]
+{
+  key: "/[%= entity.a_name.toKebabCase() %]",
+  icon: <RightSquareOutlined />,
+  label: "[%= entity.a_pluralName.toPascalCase() %]",
+},
+[% } %]

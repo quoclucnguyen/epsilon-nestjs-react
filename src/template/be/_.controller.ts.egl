@@ -28,6 +28,7 @@ import { [%= entity.a_pluralName.toPascalCase() %]Service } from './[%= entity.a
 import { Filter[%= entity.a_name.toPascalCase() %]Dto } from './dto/filter-[%= entity.a_name.toKebabCase() %].dto';
 import { Create[%= entity.a_name.toPascalCase() %]Dto } from './dto/create-[%= entity.a_name.toKebabCase() %].dto';
 import { Update[%= entity.a_name.toPascalCase() %]Dto } from './dto/update-[%= entity.a_name.toKebabCase() %].dto';
+import { Import[%= entity.a_name.toPascalCase() %]Dto } from './dto/import-[%= entity.a_name.toKebabCase() %].dto';
 
 
 @ApiBearerAuth()
@@ -68,4 +69,11 @@ export class [%= entity.a_pluralName.toPascalCase() %]Controller {
     return this.[%= entity.a_pluralName.toKebabCase() %]Service.removeWithOpts({where:{id: +id}});
   }
 
+  @Post('import')
+  import(
+    @CurrentUser() user: LoggedInUser,
+    @Body() import[%= entity.a_name.toPascalCase() %]Dto: Import[%= entity.a_name.toPascalCase() %]Dto,
+  ){
+    return this.[%= entity.a_pluralName.toKebabCase() %]Service.import[%= entity.a_name.toPascalCase() %](import[%= entity.a_name.toPascalCase() %]Dto, user);
+  }
 }
