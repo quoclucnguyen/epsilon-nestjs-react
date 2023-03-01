@@ -4,14 +4,14 @@ import "../../common/lib/entity.egl";
 import "../../common/lib/attribute.egl";
 import "../../common/lib/common.egl";
 %]
-// App.tsx
-// import
-
+[%= startProtected(out, "//", "Add additional imports here", true, "") %]
+[%= endProtected(out) %]
 [% for (entity in t_entity.all()) { %]
 const [%= entity.a_id.toPascalCase() %]Page = React.lazy(() => import("./routes/[%= entity.a_name.toKebabCase() %]/[%= entity.a_id.toPascalCase() %]Page"));
 [% } %]
 
-// <Route>
+[%= startProtected(out, "//", "Add other code in here", true, "") %]
+[%= endProtected(out) %]
 
 [% for (entity in t_entity.all()) { %]
 <Route
@@ -24,12 +24,5 @@ const [%= entity.a_id.toPascalCase() %]Page = React.lazy(() => import("./routes/
 />
 [% } %]
 
-// mainLayout
-
-[% for (entity in t_entity.all()) { %]
-{
-  key: "/[%= entity.a_name.toKebabCase() %]",
-  icon: <RightSquareOutlined />,
-  label: "[%= entity.a_pluralName.toPascalCase() %]",
-},
-[% } %]
+[%= startProtected(out, "//", "Add end code in here", true, "") %]
+[%= endProtected(out) %]

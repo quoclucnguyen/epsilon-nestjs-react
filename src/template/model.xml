@@ -1,13 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <model projectName="fms">
-	<entity id="book" name="Book" pluralName="Books" isUser="false" displayAttribute="name" displayString="Books">
-		<attribute id="name" displayString="Tên" type="string">Name</attribute>
-		<attribute id="code" displayString="Code" type="string">Code</attribute>
-		<attribute id="address" displayString="Address" type="string">Address</attribute>
-	</entity>
-	<entity id="author" name="Author" pluralName="Authors" isUser="false" displayAttribute="name" displayString="Authors">
-		<attribute id="name" displayString="Tên" type="string">Name</attribute>
-		<attribute id="code" displayString="Code" type="string">Code</attribute>
-		<attribute id="address" displayString="Address" type="string">Address</attribute>
-	</entity>
+	
+
 </model>

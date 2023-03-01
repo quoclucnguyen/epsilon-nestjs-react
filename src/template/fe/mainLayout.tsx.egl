@@ -1,0 +1,22 @@
+[%
+import "../../common/lib/string.egl";
+import "../../common/lib/entity.egl";
+import "../../common/lib/attribute.egl";
+import "../../common/lib/common.egl";
+%]
+[%= startProtected(out, "//", "Add additional imports here", true, "") %]
+[%= endProtected(out) %]
+
+[%= startProtected(out, "//", "Add other code in here", true, "") %]
+[%= endProtected(out) %]
+
+[% for (entity in t_entity.all()) { %]
+            {
+              key: "/[%= entity.a_name.toKebabCase() %]",
+              icon: <RightSquareOutlined />,
+              label: "[%= entity.a_pluralName.toPascalCase() %]",
+            },
+[% } %]
+
+[%= startProtected(out, "//", "Add end code in here", true, "") %]
+[%= endProtected(out) %]

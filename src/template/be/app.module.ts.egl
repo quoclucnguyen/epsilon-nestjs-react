@@ -1,0 +1,22 @@
+[%
+import "../../common/lib/string.egl";
+import "../../common/lib/entity.egl";
+import "../../common/lib/attribute.egl";
+import "../../common/lib/common.egl";
+%]
+[%= startProtected(out, "//", "Add additional imports here", true, "") %]
+[%= endProtected(out) %]
+
+[% for (entity in t_entity.all()) { %]
+import { [%= entity.a_pluralName.toPascalCase() %]Module } from './[%= entity.a_pluralName.toKebabCase() %]/[%= entity.a_pluralName.toKebabCase() %].module';
+[% } %]
+
+[%= startProtected(out, "//", "Add other code in here", true, "") %]
+[%= endProtected(out) %]
+
+[% for (entity in t_entity.all()) { %]
+    [%= entity.a_pluralName.toPascalCase() %]Module,
+[% } %]
+
+[%= startProtected(out, "//", "Add end code in here", true, "") %]
+[%= endProtected(out) %]
