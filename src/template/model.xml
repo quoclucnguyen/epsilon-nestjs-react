@@ -9,6 +9,9 @@
 		<attribute id="name" displayString="Tên" type="string">Name</attribute>
 		<attribute id="code" displayString="Code" type="string">Code</attribute>
 		<attribute id="address" displayString="Address" type="string">Address</attribute>
+		<attribute id="ageNumber" displayString="Age Number" type="number">Age Number</attribute>
+		<attribute id="count" displayString="Count Times" type="number">Count Time</attribute>
+
 	</entity>
 
 </model>

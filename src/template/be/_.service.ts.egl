@@ -32,8 +32,13 @@ export class [%= entity.a_pluralName.toPascalCase() %]Service extends AbstractSe
         where: {
             isActive: true,
           	[% for (attr in entity.c_attribute) { %]
-            [%= attr.text.toCamelCase() %]: Like(filter?.[%= attr.text.toCamelCase() %] ? `%${filter.[%= attr.text.toCamelCase() %]}%` : '%%'),
-             [% } %]
+              [% if (attr.a_type == 'string') { %]
+                [%= attr.text.toCamelCase() %]: Like(filter?.[%= attr.text.toCamelCase() %] ? `%${filter.[%= attr.text.toCamelCase() %]}%` : '%%'),
+              [% } %]
+              [% if (attr.a_type == 'number') { %]
+                [%= attr.text.toCamelCase() %]: filter?.[%= attr.text.toCamelCase() %] ?? null,
+              [% } %]
+            [% } %]
         },
         order: {
           id: 'DESC',

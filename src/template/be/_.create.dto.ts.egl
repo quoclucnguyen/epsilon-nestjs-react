@@ -5,12 +5,16 @@ import "../../common/lib/attribute.egl";
 import "../../common/lib/common.egl";
 %]
 import { ApiProperty } from "@nestjs/swagger";
-import { IsNotEmpty } from 'class-validator';
+import { IsNotEmpty, IsNumberString } from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class Create[%= entity.a_name.toPascalCase() %]Dto {
 	[% for (attr in entity.c_attribute) { %]
   @ApiProperty({})
   @IsNotEmpty()
+  [% if (attr.a_type == 'number') { %]
+  @IsNumberString()
+  [% } %]
   [%= attr.text.toCamelCase() %]: [%= attr.a_type %];
 
   [% } %]

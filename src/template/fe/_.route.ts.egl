@@ -436,8 +436,8 @@ export default function [%= entity.a_name.toPascalCase() %]Page() {
             [% for (attr in entity.c_attribute) { %]
             {
               title: "[%= attr.a_displayString %]",
-              key: "[%= attr.id.toCamelCase() %]",
-              dataIndex: "[%= attr.id.toCamelCase() %]",
+              key: "[%= attr.text.toCamelCase() %]",
+              dataIndex: "[%= attr.text.toCamelCase() %]",
             },
             [% } %]
             {
@@ -486,10 +486,10 @@ export default function [%= entity.a_name.toPascalCase() %]Page() {
           [% for (attr in entity.c_attribute) { %]
           <Form.Item
             label={"[%= attr.a_displayString %]"}
-            name={"[%= attr.id.toCamelCase() %]"}
+            name={"[%= attr.text.toCamelCase() %]"}
             rules={[{ required: true }]}
           >
-          <Input />
+          <Input [% if (attr.a_type == 'number') { %] type= 'number'[% } %]/>
           </Form.Item>
           [% } %]
           <Form.Item>
