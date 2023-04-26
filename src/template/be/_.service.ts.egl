@@ -4,9 +4,9 @@ import "../../common/lib/entity.egl";
 import "../../common/lib/attribute.egl";
 import "../../common/lib/common.egl";
 %]
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Between, Like, Repository } from 'typeorm';
+import { FindOptionsOrder, FindOptionsWhere, Like, Repository } from 'typeorm';
 import { AbstractService } from 'src/common/abstract.service';
 import { LoggedInUser } from 'src/users/entities/user.entity';
 import { [%= entity.a_name.toPascalCase() %]Entity } from './entities/[%= entity.a_name.toKebabCase() %].entity';
@@ -24,72 +24,99 @@ export class [%= entity.a_pluralName.toPascalCase() %]Service extends AbstractSe
     super([%= entity.a_pluralName.toPascalCase() %]Service.name, repository);
   }
 
-  async findAllWithFilter(filter: Filter[%= entity.a_name.toPascalCase() %]Dto, user: LoggedInUser) {
-    return this.repository
-      .findAndCount({
-        take: filter.take,
-        skip: filter.skip,
-        where: {
-            isActive: true,
-          	[% for (attr in entity.c_attribute) { %]
-              [% if (attr.a_type == 'string') { %]
-                [%= attr.text.toCamelCase() %]: Like(filter?.[%= attr.text.toCamelCase() %] ? `%${filter.[%= attr.text.toCamelCase() %]}%` : '%%'),
-              [% } %]
-              [% if (attr.a_type == 'number') { %]
-                [%= attr.text.toCamelCase() %]: filter?.[%= attr.text.toCamelCase() %] ?? null,
-              [% } %]
-            [% } %]
-        },
-        order: {
-          id: 'DESC',
-        },
-        relations: {
-          // createdByUser: true,
-        },
-      })
-      .then(([entities, count]) => {
-        return {
-          entities,
-          count,
-        };
-      });
-  }
+  /**
+   * Finds all entities that match the given filter criteria.
+   * @param {Filter[%= entity.a_name.toPascalCase() %]Dto} filter - The filter criteria to apply.
+   * @param {LoggedInUser} loggedInUser - The user performing the search.
+   * @returns {Promise<{ entities: [%= entity.a_name.toPascalCase() %]Entity[], count: number }>} An object containing the matching entities and the total count.
+   */
+  async findAllWithFilter(
+    filter: Filter[%= entity.a_name.toPascalCase() %]Dto,
+    loggedInUser: LoggedInUser
+  ): Promise<{ entities: [%= entity.a_name.toPascalCase() %]Entity[], count: number }> {
+    const {
+      take, 
+      skip,
+      [% for (attr in entity.c_attribute) { %]
+        [%= attr.text.toCamelCase() %],
+      [% } %]
+    } = filter;
+    const whereClause: FindOptionsWhere<[%= entity.a_name.toPascalCase() %]Entity> = {
+      isActive: true,
+      [% for (attr in entity.c_attribute) { %]
+        [% if (attr.a_type == 'string') { %]
+          [%= attr.text.toCamelCase() %]: Like(filter?.[%= attr.text.toCamelCase() %] ? `%${filter.[%= attr.text.toCamelCase() %]}%` : '%%'),
+        [% } %]
+        [% if (attr.a_type == 'number') { %]
+          [%= attr.text.toCamelCase() %]: filter?.[%= attr.text.toCamelCase() %] ?? null,
+        [% } %]
+      [% } %]
+    };
+    const orderClause: FindOptionsOrder<[%= entity.a_name.toPascalCase() %]Entity> = {
+      id: 'DESC',
+    };
 
-  async create(input: Create[%= entity.a_name.toPascalCase() %]Dto, user: LoggedInUser) {
-    /**
-     * Vaidate input
-    **/
-
-    const [%= entity.a_name.toCamelCase() %] = this.repository.create(input);
-    [%= entity.a_name.toCamelCase() %].createdBy = user.id;
-    return this.repository.save([%= entity.a_name.toCamelCase() %]);
-  }
-
-  async update[%= entity.a_name.toPascalCase() %](id: number, input: Update[%= entity.a_name.toPascalCase() %]Dto, user: LoggedInUser) {
-    const [%= entity.a_name.toCamelCase() %] = await this.repository.findOne({
-      where: { id: id, isActive: true },
+    const [entities, count] = await this.repository.findAndCount({
+      take,
+      skip,
+      where: whereClause,
+      order: orderClause,
     });
-    if ([%= entity.a_name.toCamelCase() %] === null) {
-      throw new BadRequestException('Không tìm thấy [%= entity.a_name.toCamelCase() %] với ID: ' + id);
-    }
-    [% for (attr in entity.c_attribute) { %]
-    if(input.[%= attr.text.toCamelCase() %]) [%= entity.a_name.toCamelCase() %].[%= attr.text.toCamelCase() %] = input.[%= attr.text.toCamelCase() %];
-    [% } %]
-    [%= entity.a_name.toCamelCase() %].updatedBy = user.id;
+
+    return {
+      entities,
+      count,
+    };
+  }
+
+  /**
+   * Creates a new [%= entity.a_name.toCamelCase() %] in the repository.
+   * @param {Create[%= entity.a_name.toPascalCase() %]Dto} input - The details of the [%= entity.a_name.toCamelCase() %] to create.
+   * @param {LoggedInUser} loggedInUser - The user who is creating the [%= entity.a_name.toCamelCase() %].
+   * @returns {Promise<[%= entity.a_name.toPascalCase() %]Entity>} The newly created [%= entity.a_name.toCamelCase() %].
+  **/
+  async create(input: Create[%= entity.a_name.toPascalCase() %]Dto, loggedInUser: LoggedInUser): Promise<[%= entity.a_name.toPascalCase() %]Entity> {
+    const [%= entity.a_name.toCamelCase() %] = this.repository.create(input);
+    [%= entity.a_name.toCamelCase() %].createdBy = loggedInUser.id;
     return this.repository.save([%= entity.a_name.toCamelCase() %]);
   }
 
-  async import[%= entity.a_name.toPascalCase() %](input: Import[%= entity.a_name.toPascalCase() %]Dto, user: LoggedInUser) {
-     const data = input.data.map((item) => {
+  /**
+   * Updates a [%= entity.a_name.toCamelCase() %] entity in the database
+   * @param {[%= entity.a_name.toPascalCase() %]Entity} [%= entity.a_name.toCamelCase() %] - The [%= entity.a_name.toCamelCase() %] entity to be updated
+   * @param {Update[%= entity.a_name.toPascalCase() %]Dto} input - The updated [%= entity.a_name.toCamelCase() %] data
+   * @param {LoggedInUser} loggedInUser - The logged in user making the update
+   * @returns The updated [%= entity.a_name.toCamelCase() %] entity
+   */
+  async update[%= entity.a_name.toPascalCase() %]([%= entity.a_name.toCamelCase() %]: [%= entity.a_name.toPascalCase() %]Entity, input: Update[%= entity.a_name.toPascalCase() %]Dto, loggedInUser: LoggedInUser) : Promise<[%= entity.a_name.toPascalCase() %]Entity> {
+    const { name, code, address } = input;
+    if (name) {
+      [%= entity.a_name.toCamelCase() %].name = name;
+    }
+    if (code) {
+      [%= entity.a_name.toCamelCase() %].code = code;
+    }
+    if (address) {
+      [%= entity.a_name.toCamelCase() %].address = address;
+    }
+    [%= entity.a_name.toCamelCase() %].updatedBy = loggedInUser.id;
+    return this.repository.save([%= entity.a_name.toCamelCase() %]);
+  }
+
+  /**
+   * Imports a [%= entity.a_name.toCamelCase() %] with the given data and sets createdBy to the user's ID.
+   * @param {Import[%= entity.a_name.toPascalCase() %]Dto} [%= entity.a_name.toCamelCase() %]Data - The data of the [%= entity.a_name.toCamelCase() %] to import.
+   * @param {LoggedInUser} user - The user importing the [%= entity.a_name.toCamelCase() %].
+   * @returns {Promise<boolean>} - Whether the import was successful.
+   */
+  async import[%= entity.a_name.toPascalCase() %]([%= entity.a_name.toCamelCase() %]Data: Import[%= entity.a_name.toPascalCase() %]Dto, user: LoggedInUser): Promise<boolean> {
+    const dataToSave = [%= entity.a_name.toCamelCase() %]Data.data.map((item) => {
       return {
         ...item,
         createdBy: user.id,
-      }
+      };
     });
-    const result = await this.repository.save(data);
-    if(result.length === input.data.length){
-      return true;
-    }
-    return false;
+    const savedData = await this.repository.save(dataToSave);
+    return savedData.length === [%= entity.a_name.toCamelCase() %]Data.data.length;
   }
 }

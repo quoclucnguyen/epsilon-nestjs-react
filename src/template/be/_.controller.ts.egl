@@ -14,12 +14,14 @@ import {
   Param,
   Delete,
   Query,
+  ParseIntPipe,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiBody,
   ApiConsumes,
   ApiOperation,
+  ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
 import { CurrentUser } from 'src/auth/curent-user.decorator';
@@ -29,6 +31,8 @@ import { Filter[%= entity.a_name.toPascalCase() %]Dto } from './dto/filter-[%= e
 import { Create[%= entity.a_name.toPascalCase() %]Dto } from './dto/create-[%= entity.a_name.toKebabCase() %].dto';
 import { Update[%= entity.a_name.toPascalCase() %]Dto } from './dto/update-[%= entity.a_name.toKebabCase() %].dto';
 import { Import[%= entity.a_name.toPascalCase() %]Dto } from './dto/import-[%= entity.a_name.toKebabCase() %].dto';
+import { [%= entity.a_name.toPascalCase() %]Entity } from './entities/[%= entity.a_name.toKebabCase() %].entity';
+import { [%= entity.a_name.toPascalCase() %]ByIdPipe } from './pipes/[%= entity.a_name.toKebabCase() %]-by-id.pipe';
 
 
 @ApiBearerAuth()
@@ -55,11 +59,11 @@ export class [%= entity.a_pluralName.toPascalCase() %]Controller {
 
   @Patch(':id')
   update(
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe, [%= entity.a_name.toPascalCase() %]ByIdPipe) [%= entity.a_name.toKebabCase() %]: [%= entity.a_name.toPascalCase() %]Entity,
     @Body() update[%= entity.a_name.toPascalCase() %]Dto: Update[%= entity.a_name.toPascalCase() %]Dto,
     @CurrentUser() user: LoggedInUser,
   ) {
-    return this.[%= entity.a_pluralName.toKebabCase() %]Service.update[%= entity.a_name.toPascalCase() %](+id, update[%= entity.a_name.toPascalCase() %]Dto, user);
+    return this.[%= entity.a_pluralName.toKebabCase() %]Service.update[%= entity.a_name.toPascalCase() %]([%= entity.a_name.toKebabCase() %], update[%= entity.a_name.toPascalCase() %]Dto, user);
   }
 
   @Delete(':id')
