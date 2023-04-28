@@ -10,7 +10,7 @@ export interface [%= entity.a_name.toPascalCase() %]Interface {
   [%= attr.text.toCamelCase() %][%= iif(attr.isNullable(),'?', '') %]: [%= attr.a_type %];
   [% } %]
 }
-interface Filter {
+export interface Filter {
   take: number;
   skip: number;
   [% for (attr in entity.c_attribute) { %]
