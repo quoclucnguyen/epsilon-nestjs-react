@@ -14,4 +14,9 @@
 
 	</entity>
 
+	<entity id="company" name="Company" pluralName="Companies" isUser="false" displayAttribute="name" displayString="Companies">
+		<attribute id="name" displayString="Tên" type="string">Name</attribute>
+		<attribute id="code" displayString="Code" type="string">Code</attribute>
+	</entity>
+
 </model>

@@ -1,0 +1,11 @@
+rule EntityController transform entity : t_entity {
+    template: '_.route_interface.ts.egl'
+    target {
+      var StringUtils = Native('org.apache.commons.lang3.StringUtils');
+      var CaseUtils = new Native("org.apache.commons.text.CaseUtils");
+      var tokens = entity.a_name.split(' ').collect(t | t.toLowerCase());
+      var name = StringUtils.join(tokens, "-");
+      var caseName = CaseUtils.toCamelCase(name, true, null);
+      return 'fe/src/routes/' + name + '/interface.ts'; 
+    }
+  }

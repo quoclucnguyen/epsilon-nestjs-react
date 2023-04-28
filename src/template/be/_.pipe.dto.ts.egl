@@ -1,0 +1,27 @@
+[%
+import "../../common/lib/string.egl";
+import "../../common/lib/entity.egl";
+import "../../common/lib/attribute.egl";
+import "../../common/lib/common.egl";
+%]
+import { ArgumentMetadata, BadRequestException, Injectable, PipeTransform } from "@nestjs/common";
+import { [%= entity.a_name.toPascalCase() %]Entity } from "../entities/[%= entity.a_name.toKebabCase() %].entity";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Repository } from "typeorm";
+
+@Injectable()
+export class [%= entity.a_name.toPascalCase() %]ByIdPipe implements PipeTransform<number, Promise<[%= entity.a_name.toPascalCase() %]Entity>>{
+  constructor(
+    @InjectRepository([%= entity.a_name.toPascalCase() %]Entity)
+    private [%= entity.a_pluralName.toKebabCase() %]Repository: Repository<[%= entity.a_name.toPascalCase() %]Entity>,
+  ) { }
+
+  async transform(id: number) {
+    const [%= entity.a_name.toKebabCase() %] = await this.[%= entity.a_pluralName.toKebabCase() %]Repository.findOneBy({ id });
+    if (![%= entity.a_name.toKebabCase() %]) {
+      throw new BadRequestException('[%= entity.a_name.toPascalCase() %] not exits');
+    }
+    return [%= entity.a_name.toKebabCase() %];
+  }
+
+}

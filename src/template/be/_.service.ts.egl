@@ -38,18 +38,18 @@ export class [%= entity.a_pluralName.toPascalCase() %]Service extends AbstractSe
       take, 
       skip,
       [% for (attr in entity.c_attribute) { %]
-        [%= attr.text.toCamelCase() %],
+      [%= attr.text.toCamelCase() %],
       [% } %]
     } = filter;
     const whereClause: FindOptionsWhere<[%= entity.a_name.toPascalCase() %]Entity> = {
       isActive: true,
       [% for (attr in entity.c_attribute) { %]
-        [% if (attr.a_type == 'string') { %]
-          [%= attr.text.toCamelCase() %]: Like(filter?.[%= attr.text.toCamelCase() %] ? `%${filter.[%= attr.text.toCamelCase() %]}%` : '%%'),
-        [% } %]
-        [% if (attr.a_type == 'number') { %]
-          [%= attr.text.toCamelCase() %]: filter?.[%= attr.text.toCamelCase() %] ?? null,
-        [% } %]
+      [% if (attr.a_type == 'string') { %]
+      [%= attr.text.toCamelCase() %]: Like(filter?.[%= attr.text.toCamelCase() %] ? `%${filter.[%= attr.text.toCamelCase() %]}%` : '%%'),
+      [% } %]
+      [% if (attr.a_type == 'number') { %]
+      [%= attr.text.toCamelCase() %]: filter?.[%= attr.text.toCamelCase() %] ?? null,
+      [% } %]
       [% } %]
     };
     const orderClause: FindOptionsOrder<[%= entity.a_name.toPascalCase() %]Entity> = {
@@ -89,16 +89,16 @@ export class [%= entity.a_pluralName.toPascalCase() %]Service extends AbstractSe
    * @returns The updated [%= entity.a_name.toCamelCase() %] entity
    */
   async update[%= entity.a_name.toPascalCase() %]([%= entity.a_name.toCamelCase() %]: [%= entity.a_name.toPascalCase() %]Entity, input: Update[%= entity.a_name.toPascalCase() %]Dto, loggedInUser: LoggedInUser) : Promise<[%= entity.a_name.toPascalCase() %]Entity> {
-    const { name, code, address } = input;
-    if (name) {
-      [%= entity.a_name.toCamelCase() %].name = name;
+    const { 
+      [% for (attr in entity.c_attribute) { %]
+      [%= attr.text.toCamelCase() %],
+      [% } %]
+    } = input;
+    [% for (attr in entity.c_attribute) { %]
+    if ([%= attr.text.toCamelCase() %]) {
+      [%= entity.a_name.toCamelCase() %].[%= attr.text.toCamelCase() %] = [%= attr.text.toCamelCase() %];
     }
-    if (code) {
-      [%= entity.a_name.toCamelCase() %].code = code;
-    }
-    if (address) {
-      [%= entity.a_name.toCamelCase() %].address = address;
-    }
+    [% } %]
     [%= entity.a_name.toCamelCase() %].updatedBy = loggedInUser.id;
     return this.repository.save([%= entity.a_name.toCamelCase() %]);
   }

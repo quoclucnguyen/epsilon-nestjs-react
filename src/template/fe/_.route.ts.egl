@@ -5,15 +5,14 @@ import "../../common/lib/attribute.egl";
 import "../../common/lib/common.egl";
 %]
 import {
-  CheckCircleFilled,
   DeleteFilled,
   EditOutlined,
-  PlusCircleOutlined,
   SearchOutlined,
   ExportOutlined,
-  ImportOutlined,
   DownloadOutlined,
   InboxOutlined,
+  PlusCircleTwoTone,
+  FileExcelTwoTone,
 } from "@ant-design/icons";
 import { Card } from "@nextui-org/react";
 import {
@@ -24,315 +23,190 @@ import {
   Modal,
   Popconfirm,
   Row,
-  Select,
   Space,
   Table,
-  Tag,
   Upload,
   message,
 } from "antd";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useApp } from "../../App";
-import { CURD, DistrictInterface, ProvinceInterface, downloadFile, numToCol } from "../../helper";
-import Excel from 'exceljs';
-import type { UploadProps } from 'antd';
-import {RcFile} from "antd/lib/upload";
-
-export interface [%= entity.a_name.toPascalCase() %]Interface {
-  id: number;
-  [% for (attr in entity.c_attribute) { %]
-  [%= attr.text.toCamelCase() %][%= iif(attr.isNullable(),'?', '') %]: [%= attr.a_type %];
-  [% } %]
-}
-interface Filter {
-  take: number;
-  skip: number;
-  [% for (attr in entity.c_attribute) { %]
-  [%= attr.text.toCamelCase() %][%= iif(attr.isNullable(),'?', '') %]: [%= attr.a_type %] | null;
-  [% } %]
-}
-export enum ExcelImportHeader {
-  [% for (attr in entity.c_attribute) { %]
-  [%= attr.a_id.toCamelCase() %] = '[%= attr.a_displayString %]',
-  [% } %]
-}
-export const HeaderToParam = {
-  [% for (attr in entity.c_attribute) { %]
-  [ExcelImportHeader.[%= attr.a_id.toCamelCase() %].toString()]: '[%= attr.a_id %]',
-  [% } %]
-}
+import { CURD } from "../../helper";
+import type { UploadProps } from "antd";
+import { RcFile } from "antd/lib/upload";
+import { [%= entity.a_name.toPascalCase() %]Interface, Filter } from "./interface";
+import {
+  formatFileToDownload,
+  handleExcelTemplateClick,
+  loadExcelData,
+} from "./excel";
 
 export default function [%= entity.a_name.toPascalCase() %]Page() {
   const app = useApp();
   const { Dragger } = Upload;
 
-  const [filter, setFilter] = useState<Filter>({
+ const [filter, setFilter] = useState<Filter>({
     [% for (attr in entity.c_attribute) { %]
     [%= attr.text.toCamelCase() %][%= iif(attr.isNullable(),'?', '') %]: null,
     [% } %]
     take: 10,
     skip: 0,
   });
-  const [isLoadingData, setIsLoadingData] = useState<boolean>();
+  const [isLoadingData, setLoading] = useState<boolean>();
   const [data, setData] = useState<[%= entity.a_name.toPascalCase() %]Interface[]>([]);
   const [total, setTotal] = useState<number>(0);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [pageSize, setPageSize] = useState<number>(10);
-  const [isModalAdd[%= entity.a_name.toPascalCase() %]Open, setIsModalAdd[%= entity.a_name.toPascalCase() %]Open] =
-    useState<boolean>(false);
-  const [modalAddOrUpdate[%= entity.a_name.toPascalCase() %]Title, setModalAddOrUpdate[%= entity.a_name.toPascalCase() %]Title] =
-    useState<string>();
+  const [isModalAdd[%= entity.a_name.toPascalCase() %]Open, setIsModalAdd[%= entity.a_name.toPascalCase() %]Open] = useState<boolean>(false);
   const [formAction, setFormAction] = useState<CURD | null>(null);
   const [modalTitle, setModalTitle] = useState<string>("");
   const [addOrUpdate[%= entity.a_name.toPascalCase() %]Form] = Form.useForm();
   const [searchForm] = Form.useForm();
   const [isModalImportOpen, setIsModalImportOpen] = useState<boolean>(false);
   const [fileList, setFileList] = useState<RcFile[]>([]);
-  
-  const uploadFileProps: UploadProps = {
-    name: 'file',
-    multiple: false,
-    fileList: fileList,
-    accept: 'xls,.xlsx,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    beforeUpload(file: RcFile) {
-      setFileList([...fileList, file]);
-      const reader = new FileReader();
-        reader.readAsArrayBuffer(file);
-        reader.onload = async (ev) => {
-          const workbook = new Excel.Workbook();
-          await workbook.xlsx.load(reader.result as unknown as any);
-          const worksheet = workbook.getWorksheet('data');
-          const data: any[] | undefined = [];
-          let headers: any[] | undefined = [];
-          worksheet.eachRow((row, rowNumber) => {
-              if (rowNumber === 1) {
-                  headers = row?.model?.cells?.map(cell => cell?.value?.toString().trim());
-              } else {
-                  data.push(row?.model?.cells?.map(cell => cell?.value?.toString().trim()));
-              }
-          })
-          const dataMap = data.map((row: string[]) => {
-              const obj = {} as any;
-              headers?.forEach((header: string, index) => {
-                  const key = HeaderToParam[header];
-                  obj[key] = row[index];
-              }) 
-              return obj;
-          });
-          app.axiosPost<any, any>("/[%= entity.a_pluralName.toKebabCase() %]/import", {data: dataMap}).then((result) => {
-            message.success("Import thành công");
-            setIsModalImportOpen(false);
-            getData(filter);
-          }).catch((err) => {
-            message.error("Import thất bại");
-          })
-        }
-      return false;
-    },
-  };
 
-  const handleSearch = (values: {
-  [% for (attr in entity.c_attribute) { %]
-  [%= attr.text.toCamelCase() %][%= iif(attr.isNullable(),'?', '') %]?: [%= attr.a_type %];
-  [% } %]
+  const uploadFileProps: UploadProps = useMemo(
+    () => ({
+      name: "file",
+      multiple: false,
+      fileList: fileList,
+      accept:
+        "xls,.xlsx,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      beforeUpload(file: RcFile) {
+        setFileList([...fileList, file]);
+        const reader = new FileReader();
+        reader.readAsArrayBuffer(file);
+        reader.onload = async () => {
+          const dataMap = await loadExcelData(reader);
+          try {
+            await app.axiosPost<any, any>("/[%= entity.a_pluralName.toKebabCase() %]/import", { data: dataMap });
+            message.success("Import success");
+            setIsModalImportOpen(false);
+            fetchData(filter);
+          } catch {
+            message.error("Import failed");
+          }
+        };
+      },
+    }),
+    [fileList]
+  );
+
+  const handleSearch = (searchValues: {
+    name?: string;
+    code?: string;
+    address?: string;
   }) => {
-    const filterSearch: Filter = {
+    const searchFilter: Filter = {
       ...filter,
-      ...values,
+      ...searchValues,
       take: pageSize,
       skip: 0,
     };
     setCurrentPage(1);
-    setFilter(filterSearch);
-    getData(filterSearch);
+    setFilter(searchFilter);
+    fetchData(searchFilter);
   };
 
-  const getData = async (filter: Filter) => {
-    setIsLoadingData(true);
-    const result = await app.axiosGet<
+  const fetchData = useCallback(async (filter: Filter) => {
+    setLoading(true);
+    const response = await app.axiosGet<
       { entities: [%= entity.a_name.toPascalCase() %]Interface[]; count: number },
       Filter
     >("/[%= entity.a_pluralName.toKebabCase() %]", filter);
-    if (!Array.isArray(result) && result !== undefined) {
-      const { entities, count } = result;
-      setData(entities);
-      setTotal(count);
+    if (Array.isArray(response)) {
+      return;
     }
-    setIsLoadingData(false);
-  };
+    const { entities, count } = response || {};
+    setData(entities || []);
+    setTotal(count || 0);
+    setLoading(false);
+  }, []);
 
   const handleBtnEdit[%= entity.a_name.toPascalCase() %]Click = (record: [%= entity.a_name.toPascalCase() %]Interface) => {
     setFormAction(CURD.UPDATE);
     setIsModalAdd[%= entity.a_name.toPascalCase() %]Open(true);
-    setModalTitle(`Cập nhật thông tin [%= entity.a_name %]: ${record.code} - ${record.name}`);
+    setModalTitle(`[%= entity.a_name.toPascalCase() %] edit: ${record.code} - ${record.name}`);
     addOrUpdate[%= entity.a_name.toPascalCase() %]Form.setFieldsValue(record);
   };
-  const handleBtnDeleteConfirm = (record: [%= entity.a_name.toPascalCase() %]Interface) => {
-    app.axiosDelete(`/[%= entity.a_pluralName.toKebabCase() %]/${record.id}`).then((result) => {
+  const handleDelete[%= entity.a_name.toPascalCase() %] = async ([%= entity.a_name.toCamelCase() %]: [%= entity.a_name.toPascalCase() %]Interface) => {
+    try {
+      await app.axiosDelete(`/[%= entity.a_pluralName.toKebabCase() %]/${[%= entity.a_name.toCamelCase() %].id}`);
       app.showAlert({
         type: "success",
-        message: "Xóa thành công.",
+        message: "[%= entity.a_name.toPascalCase() %] deleted successfully.",
       });
-      getData(filter);
-    });
-  };
-
-  const handleAdd[%= entity.a_name.toPascalCase() %]FormSubmit = async () => {
-    await addOrUpdate[%= entity.a_name.toPascalCase() %]Form.validateFields();
-    switch (formAction) {
-      case CURD.CREATE:
-        app
-          .axiosPost(`/[%= entity.a_pluralName.toKebabCase() %]`, addOrUpdate[%= entity.a_name.toPascalCase() %]Form.getFieldsValue())
-          .then((result) => {
-            app.showAlert({
-              type: "success",
-              message: "Thêm [%= entity.a_name.toPascalCase() %] thành công",
-            });
-            addOrUpdate[%= entity.a_name.toPascalCase() %]Form.resetFields();
-            setIsModalAdd[%= entity.a_name.toPascalCase() %]Open(false);
-            setModalTitle("");
-            getData(filter);
-          });
-        break;
-      case CURD.UPDATE:
-        app
-          .axiosPatch(
-            `/[%= entity.a_pluralName.toKebabCase() %]/${addOrUpdate[%= entity.a_name.toPascalCase() %]Form.getFieldValue("id")}`,
-            addOrUpdate[%= entity.a_name.toPascalCase() %]Form.getFieldsValue()
-          )
-          .then((result) => {
-            app.showAlert({
-              type: "success",
-              message: "Cập nhập thông tin [%= entity.a_name.toPascalCase() %] thành công",
-            });
-            addOrUpdate[%= entity.a_name.toPascalCase() %]Form.resetFields();
-            setIsModalAdd[%= entity.a_name.toPascalCase() %]Open(false);
-            setModalTitle("");
-            getData(filter);
-          });
-        break;
-      default:
+      fetchData(filter);
+    } catch (error) {
+      console.error(error);
     }
   };
 
-  const handleBtnExcelClick = async () => {
-    setIsLoadingData(true);
-    const value = searchForm.getFieldsValue();
-    const result = await app.axiosGet<[%= entity.a_name.toPascalCase() %]Interface[], Filter>(
-        "/[%= entity.a_pluralName.toKebabCase() %]",
-      {
-        ...value,
-        take: 0,
-        skip: 0,
+  const handleAddOrUpdate[%= entity.a_name.toPascalCase() %]Submit = async () => {
+    try {
+      await addOrUpdate[%= entity.a_name.toPascalCase() %]Form.validateFields();
+      const [%= entity.a_name.toCamelCase() %]Data = addOrUpdate[%= entity.a_name.toPascalCase() %]Form.getFieldsValue();
+      const [%= entity.a_name.toCamelCase() %]Id = addOrUpdate[%= entity.a_name.toPascalCase() %]Form.getFieldValue("id");
+
+      switch (formAction) {
+        case CURD.CREATE:
+          await app.axiosPost(`/[%= entity.a_pluralName.toKebabCase() %]`, [%= entity.a_name.toCamelCase() %]Data);
+          app.showAlert({ type: "success", message: "Add [%= entity.a_name.toCamelCase() %] success" });
+          break;
+        case CURD.UPDATE:
+          await app.axiosPatch(`/[%= entity.a_pluralName.toKebabCase() %]/${[%= entity.a_name.toCamelCase() %]Id}`, [%= entity.a_name.toCamelCase() %]Data);
+          app.showAlert({
+            type: "success",
+            message: "Update [%= entity.a_name.toCamelCase() %] success",
+          });
+          break;
+        default:
+          return;
       }
-    );
-    if (!Array.isArray(result) && result !== undefined) {
-      const { entities, count } = result;
-      const data = Array.from(entities, (entity: [%= entity.a_name.toPascalCase() %]Interface) => {
-        return Object.values({
-          [% for (attr in entity.c_attribute) { %]
-            [%= attr.a_id %]: entity.[%= attr.a_id %],
-          [% } %]
-        });
-      });
-      const wb = new Excel.Workbook();
-      const ws = wb.addWorksheet("data", {});
-      const listProperties = [
-          [% for (attr in entity.c_attribute) { %]
-            "[%= attr.a_displayString %]",
-          [% } %]
-      ];
-      listProperties.forEach((property, index) => {
-        const cell = ws.getCell(`${numToCol(index + 1)}1`);
-        cell.value = property;
-        cell.style = {
-          font: {
-            size: 14,
-          },
-          border: {
-            bottom: { style: "thin" },
-            left: { style: "thin" },
-            right: { style: "thin" },
-            top: { style: "thin" },
-          },
-          fill: {
-            type: "pattern",
-            pattern: "solid",
-            fgColor: { argb: "99ccff" },
-          },
-        };
-      });
-      listProperties.forEach((property, index) => {
-        const cell = ws.getCell(`${numToCol(index + 1)}2`);
-        cell.border = {
-          bottom: { style: "thin" },
-          left: { style: "thin" },
-          right: { style: "thin" },
-          top: { style: "thin" },
-        };
-      });
-      const BEGIN_INDEX_OF_FILE = 2;
-      ws.insertRows(BEGIN_INDEX_OF_FILE + 1, data, "i+");
-      ws.spliceRows(BEGIN_INDEX_OF_FILE, 1);
-      await downloadFile(wb, "DS_[%= entity.a_name.toPascalCase() %]_" + new Date().getTime() + ".xlsx");
+    } catch (error) {
+      console.error(error);
+    } finally {
+      addOrUpdate[%= entity.a_name.toPascalCase() %]Form.resetFields();
+      setIsModalAdd[%= entity.a_name.toPascalCase() %]Open(false);
+      setModalTitle("");
+      fetchData(filter);
     }
-    setIsLoadingData(false);
-  }
+  };
 
-  const handleExcelTemplateClick = async () =>{
-    const wb = new Excel.Workbook();
-    const ws = wb.addWorksheet("data", {});
-    const listProperties = [
+  const handleExcelButtonClick = async () => {
+    setLoading(true);
+    const searchValue = searchForm.getFieldsValue();
+    const [%= entity.a_name.toCamelCase() %]List = await app.axiosGet<
+      { entities: [%= entity.a_name.toPascalCase() %]Interface[]; count: number },
+      Filter
+    >("/[%= entity.a_pluralName.toKebabCase() %]", {
+      ...searchValue,
+      take: 0,
+      skip: 0,
+    });
+    if ([%= entity.a_name.toCamelCase() %]List && !Array.isArray([%= entity.a_name.toCamelCase() %]List)) {
+      const { entities } = [%= entity.a_name.toCamelCase() %]List;
+      const data = entities.map(([%= entity.a_name.toCamelCase() %]: [%= entity.a_name.toPascalCase() %]Interface) => [
         [% for (attr in entity.c_attribute) { %]
-          "[%= attr.a_displayString %]",
+        [%= entity.a_name.toCamelCase() %].[%= attr.a_id %],
         [% } %]
-    ];
-    listProperties.forEach((property, index) => {
-      const cell = ws.getCell(`${numToCol(index + 1)}1`);
-      cell.value = property;
-      cell.style = {
-        font: {
-          size: 14,
-        },
-        border: {
-          bottom: { style: "thin" },
-          left: { style: "thin" },
-          right: { style: "thin" },
-          top: { style: "thin" },
-        },
-        fill: {
-          type: "pattern",
-          pattern: "solid",
-          fgColor: { argb: "99ccff" },
-        },
-      };
-    });
-    listProperties.forEach((property, index) => {
-      const cell = ws.getCell(`${numToCol(index + 1)}2`);
-      cell.border = {
-        bottom: { style: "thin" },
-        left: { style: "thin" },
-        right: { style: "thin" },
-        top: { style: "thin" },
-      };
-    });
-    await downloadFile(wb, "IMPORT_[%= entity.a_name.toPascalCase() %]_" + new Date().getTime() + ".xlsx");
-  }
-
-  
+      ]);
+      await formatFileToDownload(data);
+    }
+    setLoading(false);
+  };
 
   useEffect(() => {
-    getData(filter);
+    fetchData(filter);
   }, []);
 
   return (
     <>
-      <Card css={{ padding: "1rem 1rem 0rem 1rem" }}>
+      <Card css={{ padding: "0.5rem 1rem" }}>
         <Form
           layout={"vertical"}
           onFinish={handleSearch}
           initialValues={filter}
-          form = {searchForm}
+          form={searchForm}
         >
           <Row>
             <Space>
@@ -343,7 +217,6 @@ export default function [%= entity.a_name.toPascalCase() %]Page() {
                 </Form.Item>
               </Col>
               [% } %]
-
               <Col>
                 <Form.Item label={" "}>
                   <Button
@@ -357,18 +230,14 @@ export default function [%= entity.a_name.toPascalCase() %]Page() {
               <Col>
                 <Form.Item label={" "}>
                   <Popconfirm
-                    title={'Xuất Excel theo tiêu chí đã chọn?'}
-                    onConfirm={handleBtnExcelClick}
-                    okText="Có"
-                    cancelText="Không"
+                    title={"Export excel?"}
+                    onConfirm={handleExcelButtonClick}
                     okButtonProps={{ loading: isLoadingData }}
                   >
-                  <Button
-                   icon={<ExportOutlined />}
-                   loading={isLoadingData}
-                   >
-                    Xuất Excel
-                   </Button>
+                    <Button
+                      icon={<ExportOutlined />}
+                      loading={isLoadingData}
+                    ></Button>
                   </Popconfirm>
                 </Form.Item>
               </Col>
@@ -376,34 +245,32 @@ export default function [%= entity.a_name.toPascalCase() %]Page() {
           </Row>
         </Form>
       </Card>
-      <br />
-      <Card css={{ padding: "1rem 1rem 0rem 1rem" }}>
-        <Row justify={"end"}>
+
+      <Card css={{ padding: "0.5rem 1rem", marginTop: "0.5rem" }}>
+        <Row justify={"end"} style={{ marginBottom: "0.5rem" }}>
           <Space>
             <Col>
               <Button
-                icon={<PlusCircleOutlined />}
+                icon={<PlusCircleTwoTone twoToneColor="#52c41a" />}
                 onClick={async () => {
                   setIsModalAdd[%= entity.a_name.toPascalCase() %]Open(true);
                   setFormAction(CURD.CREATE);
-                  setModalTitle("Thêm [%= entity.a_name %]");
+                  setModalTitle("Add [%= entity.a_name.toCamelCase() %]");
                   addOrUpdate[%= entity.a_name.toPascalCase() %]Form.resetFields();
                 }}
-              >
-                Thêm [%= entity.a_name.toPascalCase() %]
-              </Button>
+              />
             </Col>
             <Col>
-              <Button 
-                icon={<ImportOutlined />}
-                onClick={() => {setIsModalImportOpen(true); setFileList([]); }}
-              >
-                Import [%= entity.a_name.toPascalCase() %]
-              </Button>
+              <Button
+                icon={<FileExcelTwoTone twoToneColor="#52c41a" />}
+                onClick={() => {
+                  setIsModalImportOpen(true);
+                  setFileList([]);
+                }}
+              />
             </Col>
           </Space>
         </Row>
-        <br />
         <Table
           bordered
           rowKey={"id"}
@@ -421,7 +288,7 @@ export default function [%= entity.a_name.toPascalCase() %]Page() {
                 take: pageSize,
                 skip: (page - 1) * pageSize,
               };
-              getData(value);
+              fetchData(value);
             },
           }}
           columns={[
@@ -429,7 +296,7 @@ export default function [%= entity.a_name.toPascalCase() %]Page() {
               title: "#",
               align: "center",
               width: "15px",
-              render: (item, record, index) => {
+              render: (_item, _record, index) => {
                 return (currentPage - 1) * pageSize + index + 1;
               },
             },
@@ -445,20 +312,20 @@ export default function [%= entity.a_name.toPascalCase() %]Page() {
                 return (
                   <Space>
                     <Button
+                      type="link"
                       icon={<EditOutlined />}
                       onClick={() => {
                         handleBtnEdit[%= entity.a_name.toPascalCase() %]Click(record);
                       }}
                     />
                     <Popconfirm
-                      title={`Xóa [%= entity.a_name.toPascalCase() %]: ${record.code} - ${record.name}`}
+                      title={`Delete [%= entity.a_name.toCamelCase() %]: ${record.code} - ${record.name}`}
                       onConfirm={() => {
-                        handleBtnDeleteConfirm(record);
+                        handleDelete[%= entity.a_name.toPascalCase() %](record);
                       }}
-                      okText="Xóa"
-                      cancelText="Hủy"
+                      okText="Delete"
                     >
-                      <Button icon={<DeleteFilled />} danger />
+                      <Button type="link" icon={<DeleteFilled />} danger />
                     </Popconfirm>
                   </Space>
                 );
@@ -479,7 +346,7 @@ export default function [%= entity.a_name.toPascalCase() %]Page() {
       >
         <Form
           layout={"vertical"}
-          onFinish={handleAdd[%= entity.a_name.toPascalCase() %]FormSubmit}
+          onFinish={handleAddOrUpdate[%= entity.a_name.toPascalCase() %]Submit}
           form={addOrUpdate[%= entity.a_name.toPascalCase() %]Form}
         >
           <Form.Item name={"id"} hidden={true}></Form.Item>
@@ -494,7 +361,7 @@ export default function [%= entity.a_name.toPascalCase() %]Page() {
           [% } %]
           <Form.Item>
             <Button type="primary" htmlType="submit">
-              Lưu
+              Save
             </Button>
           </Form.Item>
         </Form>
@@ -502,21 +369,36 @@ export default function [%= entity.a_name.toPascalCase() %]Page() {
 
       {/* Modal import via excel */}
       <Modal
-        title={'Import [%= entity.a_name.toPascalCase() %]'}
+        title={"Import [%= entity.a_name.toCamelCase() %]"}
         open={isModalImportOpen}
-        onCancel={() => {setIsModalImportOpen(false)}}
+        onCancel={() => {
+          setIsModalImportOpen(false);
+        }}
         footer={false}
       >
-        <p>Tải template <Button onClick={handleExcelTemplateClick} type={'link'} icon={<DownloadOutlined />}>tại đây </Button></p>
-        <br/>
+        <p>
+          Template{" "}
+          <Button
+            onClick={handleExcelTemplateClick}
+            type={"link"}
+            icon={<DownloadOutlined />}
+          >
+            here{" "}
+          </Button>
+        </p>
+        <br />
         <Dragger {...uploadFileProps}>
           <p className="ant-upload-drag-icon">
             <InboxOutlined />
           </p>
-          <p className="ant-upload-text">Chọn hoặc kéo file vào khu vực này để import</p>
+          <p className="ant-upload-text">Select or drag to import</p>
         </Dragger>
       </Modal>
     </>
   );
 }
+
+
+
+
 

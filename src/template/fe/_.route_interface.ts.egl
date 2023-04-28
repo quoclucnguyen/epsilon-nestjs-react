@@ -1,0 +1,19 @@
+[%
+import "../../common/lib/string.egl";
+import "../../common/lib/entity.egl";
+import "../../common/lib/attribute.egl";
+import "../../common/lib/common.egl";
+%]
+export interface [%= entity.a_name.toPascalCase() %]Interface {
+  id: number;
+  [% for (attr in entity.c_attribute) { %]
+  [%= attr.text.toCamelCase() %][%= iif(attr.isNullable(),'?', '') %]: [%= attr.a_type %];
+  [% } %]
+}
+interface Filter {
+  take: number;
+  skip: number;
+  [% for (attr in entity.c_attribute) { %]
+  [%= attr.text.toCamelCase() %][%= iif(attr.isNullable(),'?', '') %]: [%= attr.a_type %] | null;
+  [% } %]
+}
