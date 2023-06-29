@@ -45,7 +45,7 @@ export class [%= entity.a_pluralName.toPascalCase() %]Service extends AbstractSe
       isActive: true,
       [% for (attr in entity.c_attribute) { %]
       [% if (attr.a_type == 'string') { %]
-      [%= attr.text.toCamelCase() %]: Like(filter?.[%= attr.text.toCamelCase() %] ? `%${filter.[%= attr.text.toCamelCase() %]}%` : '%%'),
+      [%= attr.text.toCamelCase() %]: [%= attr.text.toCamelCase() %] ? Like(`%${[%= attr.text.toCamelCase() %]}%`) : null,
       [% } %]
       [% if (attr.a_type == 'number') { %]
       [%= attr.text.toCamelCase() %]: filter?.[%= attr.text.toCamelCase() %] ?? null,

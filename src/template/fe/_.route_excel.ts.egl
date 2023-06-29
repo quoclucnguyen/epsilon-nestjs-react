@@ -55,7 +55,7 @@ export const handleExcelTemplateClick = async () => {
   await downloadFile(workbook, `IMPORT_[%= entity.a_name.toPascalCase() %]_${new Date().getTime()}.xlsx`);
 };
 
-export const formatFileToDownload = async (data: string[][]) => {
+export const formatFileToDownload = async (data: (string|undefined)[][]) => {
   const workbook = new Excel.Workbook();
   const worksheet = workbook.addWorksheet("data", {});
   const HEADER = [

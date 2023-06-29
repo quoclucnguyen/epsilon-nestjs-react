@@ -27,7 +27,7 @@ import { [%= linkedEntity.a_name.toPascalCase() %]Entity } from '../[%= linkedEn
 @[%= iif(entity.isUser(), 'Child', '') %]Entity({name: '[%= entity.a_name.toSnakeCase() %]'})
 export class [%= entity.a_name.toPascalCase() %]Entity extends [%= iif(entity.isUser(), 'BaseUser.BaseUserEntity', 'AbstractEntity') %] {
   [% for (attr in entity.c_attribute) { %]
-  @Column({name: '[%= attr.text.toSnakeCase() %]'[%= iif(attr.isNullable(), ', nullable: true', '') %]})
+  @Column({name: '[%= attr.text.toSnakeCase() %]', comment:'[%= attr.a_displayString %]'[%= iif(attr.isNullable(), ', nullable: true', '')%]})
   @ApiProperty()
   [%= attr.text.toCamelCase() %][%= iif(attr.isNullable(),'?', '') %]: [%= attr.a_type %];
 

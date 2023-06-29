@@ -13,15 +13,15 @@ import { Repository } from "typeorm";
 export class [%= entity.a_name.toPascalCase() %]ByIdPipe implements PipeTransform<number, Promise<[%= entity.a_name.toPascalCase() %]Entity>>{
   constructor(
     @InjectRepository([%= entity.a_name.toPascalCase() %]Entity)
-    private [%= entity.a_pluralName.toKebabCase() %]Repository: Repository<[%= entity.a_name.toPascalCase() %]Entity>,
+    private [%= entity.a_pluralName.toCamelCase() %]Repository: Repository<[%= entity.a_name.toPascalCase() %]Entity>,
   ) { }
 
   async transform(id: number) {
-    const [%= entity.a_name.toKebabCase() %] = await this.[%= entity.a_pluralName.toKebabCase() %]Repository.findOneBy({ id });
-    if (![%= entity.a_name.toKebabCase() %]) {
+    const [%= entity.a_name.toCamelCase() %] = await this.[%= entity.a_pluralName.toCamelCase() %]Repository.findOneBy({ id });
+    if (![%= entity.a_name.toCamelCase() %]) {
       throw new BadRequestException('[%= entity.a_name.toPascalCase() %] not exits');
     }
-    return [%= entity.a_name.toKebabCase() %];
+    return [%= entity.a_name.toCamelCase() %];
   }
 
 }

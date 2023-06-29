@@ -39,14 +39,14 @@ import { [%= entity.a_name.toPascalCase() %]ByIdPipe } from './pipes/[%= entity.
 @ApiTags('[%= entity.a_pluralName.toPascalCase() %]')
 @Controller('[%= entity.a_pluralName.toKebabCase() %]')
 export class [%= entity.a_pluralName.toPascalCase() %]Controller {
-  constructor(private readonly [%= entity.a_pluralName.toKebabCase() %]Service: [%= entity.a_pluralName.toPascalCase() %]Service) {}
+  constructor(private readonly [%= entity.a_pluralName.toCamelCase() %]Service: [%= entity.a_pluralName.toPascalCase() %]Service) {}
 
   @Get()
   findAll(
     @Query() filter: Filter[%= entity.a_name.toPascalCase() %]Dto,
     @CurrentUser() user: LoggedInUser
     ) {
-    return this.[%= entity.a_pluralName.toKebabCase() %]Service.findAllWithFilter(filter, user);
+    return this.[%= entity.a_pluralName.toCamelCase() %]Service.findAllWithFilter(filter, user);
   }
 
   @Post()
@@ -54,23 +54,23 @@ export class [%= entity.a_pluralName.toPascalCase() %]Controller {
     @Body() create[%= entity.a_name.toPascalCase() %]Dto: Create[%= entity.a_name.toPascalCase() %]Dto,
     @CurrentUser() user: LoggedInUser,
   ) {
-    return this.[%= entity.a_pluralName.toKebabCase() %]Service.create(create[%= entity.a_name.toPascalCase() %]Dto, user);
+    return this.[%= entity.a_pluralName.toCamelCase() %]Service.create(create[%= entity.a_name.toPascalCase() %]Dto, user);
   }
 
   @Patch(':id')
   update(
-    @Param('id', ParseIntPipe, [%= entity.a_name.toPascalCase() %]ByIdPipe) [%= entity.a_name.toKebabCase() %]: [%= entity.a_name.toPascalCase() %]Entity,
+    @Param('id', ParseIntPipe, [%= entity.a_name.toPascalCase() %]ByIdPipe) [%= entity.a_name.toCamelCase() %]: [%= entity.a_name.toPascalCase() %]Entity,
     @Body() update[%= entity.a_name.toPascalCase() %]Dto: Update[%= entity.a_name.toPascalCase() %]Dto,
     @CurrentUser() user: LoggedInUser,
   ) {
-    return this.[%= entity.a_pluralName.toKebabCase() %]Service.update[%= entity.a_name.toPascalCase() %]([%= entity.a_name.toKebabCase() %], update[%= entity.a_name.toPascalCase() %]Dto, user);
+    return this.[%= entity.a_pluralName.toCamelCase() %]Service.update[%= entity.a_name.toPascalCase() %]([%= entity.a_name.toCamelCase() %], update[%= entity.a_name.toPascalCase() %]Dto, user);
   }
 
   @Delete(':id')
   delete(
     @Param('id') id: string,
   ){
-    return this.[%= entity.a_pluralName.toKebabCase() %]Service.removeWithOpts({where:{id: +id}});
+    return this.[%= entity.a_pluralName.toCamelCase() %]Service.removeWithOpts({where:{id: +id}});
   }
 
   @Post('import')
@@ -78,6 +78,6 @@ export class [%= entity.a_pluralName.toPascalCase() %]Controller {
     @CurrentUser() user: LoggedInUser,
     @Body() import[%= entity.a_name.toPascalCase() %]Dto: Import[%= entity.a_name.toPascalCase() %]Dto,
   ){
-    return this.[%= entity.a_pluralName.toKebabCase() %]Service.import[%= entity.a_name.toPascalCase() %](import[%= entity.a_name.toPascalCase() %]Dto, user);
+    return this.[%= entity.a_pluralName.toCamelCase() %]Service.import[%= entity.a_name.toPascalCase() %](import[%= entity.a_name.toPascalCase() %]Dto, user);
   }
 }

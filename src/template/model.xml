@@ -1,22 +1,111 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<model projectName="fms">
-	<entity id="book" name="Book" pluralName="Books" isUser="false" displayAttribute="name" displayString="Books">
+<model projectName="mos">
+	<entity id="agency" name="Agency" pluralName="Agencies" isUser="false" displayAttribute="name"
+		displayString="Đơn vị thực hiện">
 		<attribute id="name" displayString="Tên" type="string">Name</attribute>
-		<attribute id="code" displayString="Code" type="string">Code</attribute>
-		<attribute id="address" displayString="Address" type="string">Address</attribute>
+		<attribute id="code" displayString="Mã" type="string">Code</attribute>
+		<attribute id="legal" displayString="Tên pháp lý" type="string" isNullable="true">Legal</attribute>
+		<attribute id="email" displayString="Email" type="string" isNullable="true">Email</attribute>
+		<attribute id="phone" displayString="Số điện thoại" type="string" isNullable="true">
+			Phone</attribute>
 	</entity>
-	<entity id="author" name="Author" pluralName="Authors" isUser="false" displayAttribute="name" displayString="Authors">
+
+	<entity id="channelGroup" name="Channel Group" pluralName="Channel Group" isUser="false"
+		displayAttribute="name" displayString="Nhóm Kênh">
 		<attribute id="name" displayString="Tên" type="string">Name</attribute>
-		<attribute id="code" displayString="Code" type="string">Code</attribute>
-		<attribute id="address" displayString="Address" type="string">Address</attribute>
-		<attribute id="ageNumber" displayString="Age Number" type="number">Age Number</attribute>
-		<attribute id="count" displayString="Count Times" type="number">Count Time</attribute>
+		<attribute id="code" displayString="Mã" type="string">Code</attribute>
+		<attribute id="description" displayString="Mô tả" type="string" isNullable="true">
+			Description</attribute>
+	</entity>
+
+	<entity id="channel" name="Channel" pluralName="Channels" isUser="false" displayAttribute="name"
+		displayString="Kênh">
+		<attribute id="name" displayString="Tên" type="string">Name</attribute>
+		<attribute id="code" displayString="Mã" type="string">Code</attribute>
+		<attribute id="description" displayString="Mô tả" type="string" isNullable="true">
+			Description</attribute>
+		<attribute id="channelGroupId" displayString="channelGroupId" type="number">Channel Group Id</attribute>
 
 	</entity>
 
-	<entity id="company" name="Company" pluralName="Companies" isUser="false" displayAttribute="name" displayString="Companies">
+
+	<entity id="brand" name="Brand" pluralName="Brands" isUser="false" displayAttribute="name"
+		displayString="Nhãn Hàng">
 		<attribute id="name" displayString="Tên" type="string">Name</attribute>
-		<attribute id="code" displayString="Code" type="string">Code</attribute>
+		<attribute id="code" displayString="Mã" type="string">Code</attribute>
+	</entity>
+
+	<entity id="unit" name="Unit" pluralName="Units" isUser="false" displayAttribute="name"
+		displayString="Đơn Vị Tính">
+		<attribute id="name" displayString="Tên" type="string">Name</attribute>
+		<attribute id="description" displayString="Mô tả" type="string">Description</attribute>
+		<attribute id="parentId" displayString="parentId" type="number">Parent Id</attribute>
+	</entity>
+
+	<entity id="commodityType" name="Commodity Type" pluralName="Commodity Type" isUser="false"
+		displayAttribute="name" displayString="Loại Hàng Hóa">
+		<attribute id="name" displayString="Tên" type="string">Name</attribute>
+		<attribute id="code" displayString="Mã" type="string">Code</attribute>
+	</entity>
+
+	<entity id="commodity" name="Commodity" pluralName="Commodities" isUser="false"
+		displayAttribute="name" displayString="Hàng Hóa">
+		<attribute id="imageUrl" displayString="Hình Ảnh" type="string">Image Url</attribute>
+		<attribute id="name" displayString="Tên Hàng Hóa" type="string">Name</attribute>
+		<attribute id="code" displayString="Mã Hàng Hóa" type="string">Code</attribute>
+		<attribute id="commodityTypeId" displayString="Loại Hàng Hóa" type="number">Commodity Type Id</attribute>
+		<attribute id="unitId" displayString="Đơn Vị Tính" type="number">Unit Id</attribute>
+		<attribute id="defaultDate" displayString="HSD Mặc Định" type="number">Default Date</attribute>
+	</entity>
+
+	<entity id="project" name="Project" pluralName="Projects" isUser="false"
+		displayAttribute="name" displayString="Dự án">
+		<attribute id="name" displayString="Tên Dự Án" type="string">Name</attribute>
+		<attribute id="code" displayString="Mã Dự Án" type="string">Code</attribute>
+		<attribute id="startDate" displayString="Ngày Bắt Đầu" type="number">Start Date</attribute>
+		<attribute id="endDate" displayString="Ngày Kết Thúc" type="number">End Date</attribute>
+		<attribute id="status" displayString="Trạng Thái" type="number">Status</attribute>
+	</entity>
+
+	<entity id="outlet" name="Outlet" pluralName="Outlets" isUser="false" displayAttribute="name"
+		displayString="Cửa Hàng">
+		<attribute id="code" displayString="Mã Cửa Hàng" type="string">Code</attribute>
+		<attribute id="name" displayString="Tên Cửa Hàng" type="string">Name</attribute>
+		<attribute id="channelId" displayString="Kênh" type="number" isNullable="true">Channel Id</attribute>
+		<attribute id="provinceId" displayString="Tỉnh/Thành Phố" type="number" isNullable="true">Province Id</attribute>
+		<attribute id="districtId" displayString="Quận/Huyện" type="number" isNullable="true">District Id</attribute>
+		<attribute id="wardId" displayString="Phường/Xã" type="number" isNullable="true">Ward Id</attribute>
+		<attribute id="address" displayString="Địa chỉ" type="string" isNullable="true">Address</attribute>
+		
+	</entity>
+
+	<entity id="employee" name="Employee" pluralName="Employees" isUser="false"
+		displayAttribute="name" displayString="Nhân viên">
+		<attribute id="imageUrl" displayString="Hình ảnh" type="string" isNullable="true">Image Url</attribute>
+		<attribute id="code" displayString="Mã" type="string" isNullable="true">Code</attribute>
+		<attribute id="name" displayString="Tên" type="string">Name</attribute>
+		<attribute id="address" displayString="Địa chỉ" type="string" isNullable="true">Address</attribute>
+		<attribute id="phone" displayString="Số điện thoại" type="string" isNullable="true">Phone</attribute>
+		<attribute id="province" displayString="Tỉnh/Thành Phố" type="string" isNullable="true">Province Id</attribute>
+		<attribute id="email" displayString="Email" type="string" isNullable="true">Email</attribute>
+	</entity>
+
+	<entity id="menu" name="Menu" pluralName="Menus" isUser="false" displayAttribute="name"
+		displayString="Menu">
+		<attribute id="projectId" displayString="Dự Án" type="number">Project Id</attribute>
+		<attribute id="name" displayString="Tên" type="string">Name</attribute>
+		<attribute id="pathname" displayString="Pathname" type="string">Pathname</attribute>
+		<attribute id="icon" displayString="Icon" type="string">Icon</attribute>
+		<attribute id="type" displayString="Loại" type="string">Type</attribute>
+		<attribute id="position" displayString="Vị trí" type="number">Position</attribute>
+		<attribute id="role" displayString="Vai trò" type="string">Role</attribute>
+		<attribute id="description" displayString="Mô tả" type="string" isNullable="true">Description</attribute>
+	</entity>
+
+	<entity id="projectOutlet" name="Project Outlet" pluralName="Project Outlet" isUser="false" displayAttribute="name"
+		displayString="ProjectOutlets">
+		<attribute id="projectId" displayString="Dự Án" type="number">Project Id</attribute>
+		<attribute id="outletId" displayString="Outlet" type="number">Outlet Id</attribute>
 	</entity>
 
 </model>

@@ -46,7 +46,7 @@ export default function [%= entity.a_name.toPascalCase() %]Page() {
 
  const [filter, setFilter] = useState<Filter>({
     [% for (attr in entity.c_attribute) { %]
-    [%= attr.text.toCamelCase() %][%= iif(attr.isNullable(),'?', '') %]: null,
+    [%= attr.text.toCamelCase() %]: null,
     [% } %]
     take: 10,
     skip: 0,
@@ -79,7 +79,7 @@ export default function [%= entity.a_name.toPascalCase() %]Page() {
           const dataMap = await loadExcelData(reader);
           try {
             await app.axiosPost<any, any>("/[%= entity.a_pluralName.toKebabCase() %]/import", { data: dataMap });
-            message.success("Import success");
+            message.success("Import thành công");
             setIsModalImportOpen(false);
             fetchData(filter);
           } catch {
@@ -125,7 +125,7 @@ export default function [%= entity.a_name.toPascalCase() %]Page() {
   const handleBtnEdit[%= entity.a_name.toPascalCase() %]Click = (record: [%= entity.a_name.toPascalCase() %]Interface) => {
     setFormAction(CURD.UPDATE);
     setIsModalAdd[%= entity.a_name.toPascalCase() %]Open(true);
-    setModalTitle(`[%= entity.a_name.toPascalCase() %] edit: ${record.code} - ${record.name}`);
+    setModalTitle(`[%= entity.a_name.toPascalCase() %] chỉnh sửa: ${record.code} - ${record.name}`);
     addOrUpdate[%= entity.a_name.toPascalCase() %]Form.setFieldsValue(record);
   };
   const handleDelete[%= entity.a_name.toPascalCase() %] = async ([%= entity.a_name.toCamelCase() %]: [%= entity.a_name.toPascalCase() %]Interface) => {
@@ -133,7 +133,7 @@ export default function [%= entity.a_name.toPascalCase() %]Page() {
       await app.axiosDelete(`/[%= entity.a_pluralName.toKebabCase() %]/${[%= entity.a_name.toCamelCase() %].id}`);
       app.showAlert({
         type: "success",
-        message: "[%= entity.a_name.toPascalCase() %] deleted successfully.",
+        message: "[%= entity.a_name.toPascalCase() %] xóa thành công.",
       });
       fetchData(filter);
     } catch (error) {
@@ -150,13 +150,13 @@ export default function [%= entity.a_name.toPascalCase() %]Page() {
       switch (formAction) {
         case CURD.CREATE:
           await app.axiosPost(`/[%= entity.a_pluralName.toKebabCase() %]`, [%= entity.a_name.toCamelCase() %]Data);
-          app.showAlert({ type: "success", message: "Add [%= entity.a_name.toCamelCase() %] success" });
+          app.showAlert({ type: "success", message: "Thêm [%= entity.a_name.toCamelCase() %] thành công" });
           break;
         case CURD.UPDATE:
           await app.axiosPatch(`/[%= entity.a_pluralName.toKebabCase() %]/${[%= entity.a_name.toCamelCase() %]Id}`, [%= entity.a_name.toCamelCase() %]Data);
           app.showAlert({
             type: "success",
-            message: "Update [%= entity.a_name.toCamelCase() %] success",
+            message: "Cập nhật [%= entity.a_name.toCamelCase() %] thành công",
           });
           break;
         default:
@@ -164,12 +164,12 @@ export default function [%= entity.a_name.toPascalCase() %]Page() {
       }
     } catch (error) {
       console.error(error);
-    } finally {
-      addOrUpdate[%= entity.a_name.toPascalCase() %]Form.resetFields();
-      setIsModalAdd[%= entity.a_name.toPascalCase() %]Open(false);
-      setModalTitle("");
-      fetchData(filter);
+      return;
     }
+    addOrUpdate[%= entity.a_name.toPascalCase() %]Form.resetFields();
+    setIsModalAdd[%= entity.a_name.toPascalCase() %]Open(false);
+    setModalTitle("");
+    fetchData(filter);
   };
 
   const handleExcelButtonClick = async () => {
@@ -255,7 +255,7 @@ export default function [%= entity.a_name.toPascalCase() %]Page() {
                 onClick={async () => {
                   setIsModalAdd[%= entity.a_name.toPascalCase() %]Open(true);
                   setFormAction(CURD.CREATE);
-                  setModalTitle("Add [%= entity.a_name.toCamelCase() %]");
+                  setModalTitle("Thêm [%= entity.a_name.toCamelCase() %]");
                   addOrUpdate[%= entity.a_name.toPascalCase() %]Form.resetFields();
                 }}
               />
@@ -319,11 +319,11 @@ export default function [%= entity.a_name.toPascalCase() %]Page() {
                       }}
                     />
                     <Popconfirm
-                      title={`Delete [%= entity.a_name.toCamelCase() %]: ${record.code} - ${record.name}`}
+                      title={`Xóa [%= entity.a_name.toCamelCase() %]: ${record.code} - ${record.name}`}
                       onConfirm={() => {
                         handleDelete[%= entity.a_name.toPascalCase() %](record);
                       }}
-                      okText="Delete"
+                      okText="Xóa"
                     >
                       <Button type="link" icon={<DeleteFilled />} danger />
                     </Popconfirm>
@@ -354,14 +354,16 @@ export default function [%= entity.a_name.toPascalCase() %]Page() {
           <Form.Item
             label={"[%= attr.a_displayString %]"}
             name={"[%= attr.text.toCamelCase() %]"}
-            rules={[{ required: true }]}
+            [% if (attr.a_isNullable <> 'true') { %]
+            rules={[{ required: true, message: '[%= attr.a_displayString %] không được để trống' }]}
+            [% } %]
           >
           <Input [% if (attr.a_type == 'number') { %] type= 'number'[% } %]/>
           </Form.Item>
           [% } %]
           <Form.Item>
             <Button type="primary" htmlType="submit">
-              Save
+              Lưu
             </Button>
           </Form.Item>
         </Form>
@@ -391,7 +393,7 @@ export default function [%= entity.a_name.toPascalCase() %]Page() {
           <p className="ant-upload-drag-icon">
             <InboxOutlined />
           </p>
-          <p className="ant-upload-text">Select or drag to import</p>
+          <p className="ant-upload-text">Chọn hoặc kéo file để import</p>
         </Dragger>
       </Modal>
     </>
